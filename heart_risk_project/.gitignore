@@ -1,0 +1,30 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.so
+
+# Django/migrations
+**/migrations/
+db.sqlite3
+
+# Environment files
+.env
+*.env
+
+# VSCode
+.vscode/
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python Poetry
+poetry.lock
+
+# Jupyter Notebooks Checkpoints
+.ipynb_checkpoints/

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    {% extends 'prediction/base.html' %}
+
+{% block title %}Model Information - HeartGuard{% endblock %}
+
+{% block content %}
+<div class="bg-gray-100 min-h-screen py-12">
+    <div class="container mx-auto px-4 max-w-4xl">
+
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-8 border-b pb-4">
+            <i class="fas fa-brain mr-3 text-green-600"></i>Prediction Model Information
+        </h1>
+
+        <div class="bg-white p-8 rounded-lg shadow-lg space-y-6">
+
+            {# Section 1: General Info #}
+            <div class="border-b pb-4">
+                <h2 class="text-2xl font-semibold text-gray-700 mb-3">Model Overview</h2>
+                <dl class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                    <div class="col-span-1 font-medium text-gray-600">Model Name/Version:</div>
+                    <div class="col-span-2 text-gray-800">{{ model_info.name|default:'HeartGuard Predictor v1.0' }}</div> {# Replace with actual data #}
+
+                    <div class="col-span-1 font-medium text-gray-600">Algorithm:</div>
+                    <div class="col-span-2 text-gray-800">{{ model_info.algorithm|default:'Logistic Regression' }}</div> {# Replace with actual data #}
+
+                    <div class="col-span-1 font-medium text-gray-600">Training Data:</div>
+                    <div class="col-span-2 text-gray-800">{{ model_info.data_source|default:'Based on anonymized clinical dataset (e.g., UCI Heart Disease)' }}</div> {# Replace with actual data #}
+                 </dl>
+            </div>
+
+            {# Section 2: Features #}
+            <div class="border-b pb-4">
+                 <h2 class="text-2xl font-semibold text-gray-700 mb-3">Key Predictive Features</h2>
+                 <p class="text-gray-600 mb-3 text-sm">The model primarily considers the following factors:</p>
+                 <ul class="list-disc list-inside text-gray-800 space-y-1 text-sm">
+                    {% for feature in model_info.features %} {# Assuming model_info.features is a list #}
+                         <li>{{ feature }}</li>
+                    {% empty %}
+                         <li>Age</li>
+                         <li>Sex</li>
+                         <li>Chest Pain Type (cp)</li>
+                         <li>Resting Blood Pressure (trestbps)</li>
+                         <li>Serum Cholestoral (chol)</li>
+                         <li>Fasting Blood Sugar > 120 mg/dl (fbs)</li>
+                         <li>Resting Electrocardiographic Results (restecg)</li>
+                         <li>Maximum Heart Rate Achieved (thalach)</li>
+                         <li>Exercise Induced Angina (exang)</li>
+                         <li>ST Depression Induced by Exercise (oldpeak)</li>
+                         <li>Slope of the Peak Exercise ST Segment (slope)</li>
+                         <li>Number of Major Vessels Colored by Flourosopy (ca)</li>
+                         <li>Thalassemia (thal)</li>
+                     {% endfor %}
+                 </ul>
+            </div>
+
+             {# Section 3: Performance (Example) #}
+             <div class="border-b pb-4">
+                 <h2 class="text-2xl font-semibold text-gray-700 mb-3">Performance Metrics</h2>
+                 <dl class="grid grid-cols-1 md:grid-cols-3 gap-x-4 gap-y-2 text-sm">
+                    <div class="col-span-1 font-medium text-gray-600">Accuracy:</div>
+                    <div class="col-span-2 text-gray-800">{{ model_info.accuracy|floatformat:2|default:'N/A' }}%</div> {# Replace with actual data #}
+
+                    <div class="col-span-1 font-medium text-gray-600">Precision (Positive Class):</div>
+                    <div class="col-span-2 text-gray-800">{{ model_info.precision|floatformat:2|default:'N/A' }}%</div> {# Replace with actual data #}
+
+                    <div class="col-span-1 font-medium text-gray-600">Recall (Sensitivity):</div>
+                    <div class="col-span-2 text-gray-800">{{ model_info.recall|floatformat:2|default:'N/A' }}%</div> {# Replace with actual data #}
+
+                    <div class="col-span-1 font-medium text-gray-600">AUC Score:</div>
+                    <div class="col-span-2 text-gray-800">{{ model_info.auc|floatformat:3|default:'N/A' }}</div> {# Replace with actual data #}
+                 </dl>
+                 <p class="mt-3 text-xs text-gray-500">Note: Performance metrics based on the validation dataset during development.</p>
+             </div>
+
+             {# Section 4: Limitations/Disclaimer #}
+             <div>
+                 <h2 class="text-2xl font-semibold text-gray-700 mb-3">Limitations & Disclaimer</h2>
+                 <p class="text-sm text-gray-600 mb-2">
+                     This prediction model is intended as a supplementary tool for risk assessment awareness and should <strong class="font-medium">not</strong> be used as a sole basis for diagnosis or treatment decisions.
+                 </p>
+                 <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                    <li>Model accuracy depends on the quality and representativeness of the input data.</li>
+                    <li>It does not account for all possible risk factors or individual patient complexities.</li>
+                    <li>Clinical judgment and consultation with healthcare professionals remain paramount.</li>
+                 </ul>
+             </div>
+
+        </div>
+         <div class="mt-8 text-center">
+             <a href="{% url 'prediction:doctor_dashboard' %}" class="text-red-600 hover:text-red-800 font-medium transition duration-300">
+                 <i class="fas fa-arrow-left mr-1"></i> Back to Dashboard
+             </a>
+         </div>
+    </div>
+</div>
+{% endblock %}  
+    
+</body>
+</html>

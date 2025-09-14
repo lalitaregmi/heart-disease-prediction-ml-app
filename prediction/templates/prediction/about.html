@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Heart Disease - HeartGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .heartbeat {
+            animation: heartbeat 1.5s infinite;
+        }
+        .slide-in {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .staggered > * {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navigation -->
+    <nav class="bg-red-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+          <div class="flex justify-between items-center py-4">
+            
+            <!-- Logo -->
+            <a href="{% url 'prediction:home' %}" class="flex items-center space-x-2">
+              <i class="fas fa-heartbeat text-2xl heartbeat"></i>
+              <span class="font-bold text-xl">HeartGuard</span>
+            </a>
+      
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="{% url 'prediction:home' %}" class="hover:text-red-200 ...">Home</a>
+                <a href="{% url 'prediction:about' %}" class="hover:text-red-200 ...">About</a>
+                <a href="{% url 'prediction:prevention' %}" class="hover:text-red-200 ...">Prevention</a>
+                <a href="{% url 'prediction:risk' %}" class="hover:text-red-200 ...">Risk Factors</a>
+                <a href="{% url 'prediction:assessment' %}" class="hover:text-red-200 ...">Risk Assessment</a>
+            
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %} <!-- Doctor Links -->
+                        <a href="{% url 'prediction:doctor_dashboard' %}" class="hover:text-red-200 ... font-semibold">Doctor Area</a>
+                    {% endif %}
+                    <span class="font-medium">Welcome, {{ user.name|default:user.email }}!</span>
+                    <form action="{% url 'prediction:logout' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-white text-red-600 ...">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'prediction:login' %}" class="hover:text-red-200 ...">Login</a>
+                    <a href="{% url 'prediction:signup' %}" class="bg-white text-red-600 ...">Sign Up</a>
+                {% endif %}
+            </div>
+            <!-- Mobile Menu (Add similar logic) -->
+            <div class="md:hidden hidden" id="mobile-menu">
+                <div class="flex flex-col space-y-4 py-4">
+                    <a href="{% url 'prediction:home' %}" class="...">Home</a>
+                    <a href="{% url 'prediction:about' %}" class="...">About</a>
+                    <a href="{% url 'prediction:prevention' %}" class="...">Prevention</a>
+                    <a href="{% url 'prediction:risk' %}" class="...">Risk Factors</a>
+                    <a href="{% url 'prediction:assessment' %}" class="...">Risk Assessment</a>
+            
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff %}
+                            <a href="{% url 'prediction:doctor_dashboard' %}" class="... font-semibold">Doctor Area</a>
+                        {% endif %}
+                        <span class="font-medium text-center py-2">Welcome, {{ user.name|default:user.email }}!</span>
+                        <form action="{% url 'prediction:logout' %}" method="post" class="w-full">
+                            {% csrf_token %}
+                            <button type="submit" class="...">Logout</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'prediction:login' %}" class="...">Login</a>
+                        <a href="{% url 'prediction:signup' %}" class="...">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+      </nav>
+      
+<header class="bg-gradient-to-r from-red-600 to-red-800 text-white py-12">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-4">Understanding Heart Disease</h1>
+            <p class="text-xl max-w-3xl mx-auto">Learn about the causes, types, and impact of heart disease to better protect yourself and your loved ones.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- What is Heart Disease Section -->
+        <section class="mb-16">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0 md:pr-8 staggered">
+                    <h2 class="text-3xl font-bold mb-4 text-red-600">What is Heart Disease?</h2>
+                    <p class="mb-4">Heart disease refers to several types of heart conditions. The most common type is coronary artery disease, which affects blood flow to the heart and can lead to heart attacks.</p>
+                    <p class="mb-4">Heart disease develops when the arteries that supply blood to the heart muscle become hardened and narrowed due to a buildup of plaque on the arteries' inner walls. This buildup reduces blood flow to the heart, which can cause chest pain (angina), shortness of breath, or a heart attack.</p>
+                    <p>Other types of heart disease include heart failure, arrhythmia (abnormal heart rhythms), and heart valve problems.</p>
+                </div>
+                <div class="md:w-1/2">
+                    <div class="bg-red-100 p-8 rounded-lg shadow-lg">
+                        <div class="flex justify-center mb-6">
+                            <i class="fas fa-heart text-6xl text-red-500 heartbeat"></i>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4 text-center">Heart Disease Statistics</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Heart disease is the leading cause of death globally</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>Nearly 18 million people die from cardiovascular diseases annually</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>In the United States, someone has a heart attack every 40 seconds</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-check-circle text-green-500 mt-1 mr-2"></i>
+                                <span>About 1 in 5 heart attacks is silent—the person isn't aware of damage to their heart</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Types of Heart Disease -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center text-red-600">Types of Heart Disease</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 staggered">
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-heart-broken"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Coronary Artery Disease</h3>
+                    <p>The most common type, caused by plaque buildup in the arteries that supply blood to the heart. This can lead to heart attacks if blood flow is severely restricted or blocked.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Arrhythmia</h3>
+                    <p>Abnormal heart rhythms that can cause the heart to beat too fast, too slow, or irregularly. Some arrhythmias can be life-threatening if they prevent the heart from pumping enough blood.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Heart Failure</h3>
+                    <p>Occurs when the heart can't pump enough blood to meet the body's needs. It doesn't mean the heart has stopped working, but that it's not working as efficiently as it should.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-valve"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Valvular Heart Disease</h3>
+                    <p>Affects one or more of the four valves that keep blood flowing in the right direction through the heart. Valves may not open or close properly, disrupting blood flow.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-baby"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Congenital Heart Defects</h3>
+                    <p>Heart abnormalities present at birth. They can affect the heart walls, valves, and blood vessels. Some defects are simple with no symptoms, while others are complex and require treatment.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-lungs"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Cardiomyopathy</h3>
+                    <p>Disease of the heart muscle that makes it harder for the heart to pump blood to the rest of the body. Can lead to heart failure if not treated.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Symptoms Section -->
+        <section class="mb-16">
+            <div class="bg-red-50 p-8 rounded-lg">
+                <h2 class="text-3xl font-bold mb-6 text-red-600">Common Symptoms of Heart Disease</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 staggered">
+                    <div class="flex items-start">
+                        <div class="bg-red-100 p-2 rounded-full mr-4">
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-1">Chest Pain or Discomfort</h3>
+                            <p>Pressure, tightness, pain, or a squeezing or aching sensation in your chest or arms that may spread to your neck, jaw or back.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-red-100 p-2 rounded-full mr-4">
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-1">Shortness of Breath</h3>
+                            <p>Difficulty breathing or shortness of breath, which may occur with or without chest discomfort.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-red-100 p-2 rounded-full mr-4">
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-1">Fatigue</h3>
+                            <p>Unexplained fatigue or weakness, which may become more severe during physical activity.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <div class="bg-red-100 p-2 rounded-full mr-4">
+                            <i class="fas fa-exclamation-circle text-red-500"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold mb-1">Irregular Heartbeat</h3>
+                            <p>Heart palpitations or feeling like your heart is racing, fluttering, or beating irregularly.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-lg font-medium text-yellow-800">Warning</h3>
+                            <p class="text-yellow-700">Heart attack symptoms vary between individuals. If you suspect you or someone else is having a heart attack, call emergency services immediately. Every minute matters.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Diagnosis and Treatment -->
+        <section>
+            <h2 class="text-3xl font-bold mb-8 text-center text-red-600">Diagnosis and Treatment</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 staggered">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 text-red-600">Diagnosis Methods</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-stethoscope text-red-500 mt-1 mr-3"></i>
+                            <span><strong>Physical Examination:</strong> Checking blood pressure, weight, and listening to heart and lungs.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-heartbeat text-red-500 mt-1 mr-3"></i>
+                            <span><strong>Electrocardiogram (ECG):</strong> Records electrical signals as they travel through your heart.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-running text-red-500 mt-1 mr-3"></i>
+                            <span><strong>Stress Test:</strong> Monitors your heart during exercise to see how it responds to physical stress.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-x-ray text-red-500 mt-1 mr-3"></i>
+                            <span><strong>Echocardiogram:</strong> Uses sound waves to create images of your heart in motion.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-vial text-red-500 mt-1 mr-3"></i>
+                            <span><strong>Blood Tests:</strong> Check for specific proteins that indicate heart damage.</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4 text-red-600">Treatment Options</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-pills text-red-500 mt-1 mr-3"></i>
+                            <span><strong>Medications:</strong> Various drugs can treat different aspects of heart disease, including blood thinners, beta blockers, and cholesterol-lowering medications.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-utensils text-red-500 mt-1 mr-3"></i>
+                            <span><strong>Lifestyle Changes:</strong> Healthy diet, regular exercise, quitting smoking, and limiting alcohol can significantly improve heart health.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-procedures text-red-500 mt-1 mr-3"></i>
+                            <span><strong>Medical Procedures:</strong> Angioplasty, stent placement, or bypass surgery may be needed to improve blood flow.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-battery-full text-red-500 mt-1 mr-3"></i>
+                            <span><strong>Devices:</strong> Pacemakers or implantable cardioverter-defibrillators (ICDs) may be used to help maintain normal heart rhythm.</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-heart text-red-500 mt-1 mr-3"></i>
+                            <span><strong>Heart Transplant:</strong> In severe cases where other treatments haven't worked, a heart transplant may be considered.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </main>
+
+
+    {% if not user.is_staff %}
+
+    <!-- Call to Action -->
+    <section class="bg-red-600 text-white py-12">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6">Take the First Step Toward Heart Health</h2>
+            <p class="text-xl mb-8 max-w-3xl mx-auto">Understanding your personal risk factors is crucial for preventing heart disease. Use our risk assessment tool to get started.</p>
+            <a href="/assessment" class="bg-white text-red-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-medium text-lg transition duration-300 inline-block">
+                Check Your Risk Now
+            </a>
+        </div>
+    </section>
+
+    {% endif %}
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between ">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">HeartGuard</h3>
+                    <p class="mb-4">Empowering you with knowledge for a healthier heart.</p>
+                   
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Quick Links</h3>
+                    <ul class="flex justify-between  gap-5 ">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition duration-300">Home</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition duration-300">About</a></li>
+                        <li><a href="prevention.html" class="text-gray-400 hover:text-white transition duration-300">Prevention</a></li>
+                        <li><a href="risk-factors.html" class="text-gray-400 hover:text-white transition duration-300">Risk Factors</a></li>
+                        <li><a href="prediction.html" class="text-gray-400 hover:text-white transition duration-300">Risk Assessment</a></li>
+                    </ul>
+                </div>
+                
+              
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 HeartGuard. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+   <script>
+    // Mobile menu toggle
+    const menuToggleButton = document.getElementById('menu-toggle');
+    if (menuToggleButton) {
+        menuToggleButton.addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) { // Also good to check if mobileMenu exists
+                mobileMenu.classList.toggle('hidden');
+            }
+        });
+    }
+    
+    // Animation for staggered elements
+    document.addEventListener('DOMContentLoaded', function() {
+        const staggeredElements = document.querySelectorAll('.staggered > *');
+        staggeredElements.forEach((el, index) => {
+            setTimeout(() => {
+                el.classList.add('fade-in');
+            }, 100 * index); // Adjust delay as needed, 100ms is reasonable
+        });
+    });
+    
+    // Scroll animation (ensure this is working as intended too)
+    // No elements in your current main content sections use 'slide-in',
+    // but if you plan to, this should also be guarded or tested.
+    window.addEventListener('scroll', function() {
+        const elements = document.querySelectorAll('.slide-in');
+        elements.forEach(element => {
+            const position = element.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight / 1.3;
+            
+            if (position < screenPosition) {
+                // Ensure the fadeIn animation is appropriately defined and works with inline style
+                element.style.animation = 'fadeIn 0.5s ease-out forwards';
+            }
+        });
+    });
+</script>   
+</body>
+</html>

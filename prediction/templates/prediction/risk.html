@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Risk Factors - HeartGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes heartbeat {
+            0% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.1);
+            }
+
+            50% {
+                transform: scale(1);
+            }
+
+            75% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .heartbeat {
+            animation: heartbeat 1.5s infinite;
+        }
+
+        .slide-in {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .staggered>* {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .risk-meter {
+            transition: transform 1s ease-in-out;
+            transform-origin: bottom center;
+            transform: rotate(-90deg);
+        }
+
+        .risk-card:hover .risk-meter {
+            transform: rotate(var(--rotate-value));
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navigation -->
+    <nav class="bg-red-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+
+                <!-- Logo -->
+                <a href="{% url 'prediction:home' %}" class="flex items-center space-x-2">
+                    <i class="fas fa-heartbeat text-2xl heartbeat"></i>
+                    <span class="font-bold text-xl">HeartGuard</span>
+                </a>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center space-x-6">
+                    <a href="{% url 'prediction:home' %}" class="hover:text-red-200 ...">Home</a>
+                    <a href="{% url 'prediction:about' %}" class="hover:text-red-200 ...">About</a>
+                    <a href="{% url 'prediction:prevention' %}" class="hover:text-red-200 ...">Prevention</a>
+                    <a href="{% url 'prediction:risk' %}" class="hover:text-red-200 ...">Risk Factors</a>
+                    <a href="{% url 'prediction:assessment' %}" class="hover:text-red-200 ...">Risk Assessment</a>
+                    <!-- NEW Public Link -->
+
+                    {% if user.is_authenticated %}
+                    {% if user.is_staff %} <!-- Doctor Links -->
+                    <a href="{% url 'prediction:doctor_dashboard' %}"
+                        class="hover:text-red-200 ... font-semibold">Doctor Area</a>
+                    {% endif %}
+                    <span class="font-medium">Welcome, {{ user.name|default:user.email }}!</span>
+                    <form action="{% url 'prediction:logout' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-white text-red-600 ...">Logout</button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'prediction:login' %}" class="hover:text-red-200 ...">Login</a>
+                    <a href="{% url 'prediction:signup' %}" class="bg-white text-red-600 ...">Sign Up</a>
+                    {% endif %}
+                </div>
+                <!-- Mobile Menu (Add similar logic) -->
+                <div class="md:hidden hidden" id="mobile-menu">
+                    <div class="flex flex-col space-y-4 py-4">
+                        <a href="{% url 'prediction:home' %}" class="...">Home</a>
+                        <a href="{% url 'prediction:about' %}" class="...">About</a>
+                        <a href="{% url 'prediction:prevention' %}" class="...">Prevention</a>
+                        <a href="{% url 'prediction:risk' %}" class="...">Risk Factors</a>
+                        <a href="{% url 'prediction:assessment' %}" class="...">Risk Assessment</a>
+
+                        {% if user.is_authenticated %}
+                        {% if user.is_staff %}
+                        <a href="{% url 'prediction:doctor_dashboard' %}" class="... font-semibold">Doctor Area</a>
+                        {% endif %}
+                        <span class="font-medium text-center py-2">Welcome, {{ user.name|default:user.email }}!</span>
+                        <form action="{% url 'prediction:logout' %}" method="post" class="w-full">
+                            {% csrf_token %}
+                            <button type="submit" class="...">Logout</button>
+                        </form>
+                        {% else %}
+                        <a href="{% url 'prediction:login' %}" class="...">Login</a>
+                        <a href="{% url 'prediction:signup' %}" class="...">Sign Up</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+    </nav>
+
+
+    <!-- Page Header -->
+    <header class="bg-gradient-to-r from-red-600 to-red-800 text-white py-12">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-4">Heart Disease Risk Factors</h1>
+            <p class="text-xl max-w-3xl mx-auto">Understanding what increases your risk is the first step toward
+                prevention.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Introduction Section -->
+        <section class="mb-16">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0 md:pr-8 staggered">
+                    <h2 class="text-3xl font-bold mb-4 text-red-600">What Are Risk Factors?</h2>
+                    <p class="mb-4">Risk factors are conditions or behaviors that increase your chance of developing
+                        heart disease. Some risk factors cannot be changed, such as age and family history, but many
+                        others can be modified through lifestyle changes and medical interventions.</p>
+                    <p class="mb-4">The more risk factors you have, the greater your chance of developing heart disease.
+                        However, having one or more risk factors doesn't mean you will definitely develop heart disease,
+                        and not having any risk factors doesn't guarantee you won't.</p>
+                    <p>Understanding your personal risk factors is crucial for developing an effective prevention
+                        strategy. Our risk assessment tool can help you identify your specific risk profile.</p>
+                </div>
+                <div class="md:w-1/2">
+                    <div class="bg-red-50 p-8 rounded-lg shadow-lg">
+                        <div class="flex justify-center mb-6">
+                            <div class="relative">
+                                <i class="fas fa-heart text-6xl text-red-500 heartbeat"></i>
+                                <div class="absolute top-0 right-0 -mt-2 -mr-2">
+                                    <div
+                                        class="bg-yellow-400 text-xs text-yellow-800 font-bold rounded-full h-6 w-6 flex items-center justify-center pulse">
+                                        !
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-semibold mb-4 text-center">Risk Factor Categories</h3>
+                        <div class="space-y-3">
+                            <div class="flex items-center p-2 bg-white rounded-lg">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-dna text-blue-600"></i>
+                                </div>
+                                <span class="font-medium">Non-modifiable (cannot be changed)</span>
+                            </div>
+                            <div class="flex items-center p-2 bg-white rounded-lg">
+                                <div class="bg-green-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-apple-alt text-green-600"></i>
+                                </div>
+                                <span class="font-medium">Lifestyle (can be modified)</span>
+                            </div>
+                            <div class="flex items-center p-2 bg-white rounded-lg">
+                                <div class="bg-purple-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-pills text-purple-600"></i>
+                                </div>
+                                <span class="font-medium">Medical conditions (can be managed)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Non-modifiable Risk Factors -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center text-red-600">Non-modifiable Risk Factors</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 staggered">
+                <!-- Age -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-hourglass-half"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Age</h3>
+                    <p class="mb-4">The risk of heart disease increases as you get older. Men over 45 and women over 55
+                        (or after menopause) are at higher risk.</p>
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg">
+                        <p class="text-sm text-blue-800"><strong>Why it matters:</strong> Aging causes changes to the
+                            heart and blood vessels, including arterial stiffening and decreased elasticity.</p>
+                    </div>
+                </div>
+
+                <!-- Sex -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-venus-mars"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Sex</h3>
+                    <p class="mb-4">Men generally have a higher risk of heart disease than pre-menopausal women. After
+                        menopause, women's risk increases to nearly that of men.</p>
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg">
+                        <p class="text-sm text-blue-800"><strong>Why it matters:</strong> Estrogen provides some
+                            protection against heart disease before menopause. Men tend to develop heart disease about
+                            10 years earlier than women.</p>
+                    </div>
+                </div>
+
+                <!-- Family History -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-dna"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Family History</h3>
+                    <p class="mb-4">Your risk increases if a first-degree relative (parent or sibling) had heart disease
+                        at an early age (before 55 for men or 65 for women).</p>
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg">
+                        <p class="text-sm text-blue-800"><strong>Why it matters:</strong> Genetic factors can influence
+                            heart structure, blood vessel function, and how your body processes cholesterol and other
+                            substances.</p>
+                    </div>
+                </div>
+
+                <!-- Race and Ethnicity -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Race and Ethnicity</h3>
+                    <p class="mb-4">Some racial and ethnic groups have higher risks of heart disease. African Americans,
+                        for example, have higher rates of hypertension, a major risk factor.</p>
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg">
+                        <p class="text-sm text-blue-800"><strong>Why it matters:</strong> Differences may be due to
+                            genetic factors, higher rates of certain conditions, and social determinants of health
+                            including access to healthcare.</p>
+                    </div>
+                </div>
+
+                <!-- Previous Heart Events -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Previous Heart Events</h3>
+                    <p class="mb-4">If you've already had a heart attack, stroke, or other heart-related event, your
+                        risk of having another one is significantly higher.</p>
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg">
+                        <p class="text-sm text-blue-800"><strong>Why it matters:</strong> Previous events indicate
+                            existing cardiovascular damage and underlying conditions that increase vulnerability to
+                            future events.</p>
+                    </div>
+                </div>
+
+                <!-- Menopause -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-blue-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-venus"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Menopause</h3>
+                    <p class="mb-4">Women's risk of heart disease increases after menopause due to decreasing estrogen
+                        levels, which have protective effects on the heart.</p>
+                    <div class="mt-4 bg-blue-50 p-3 rounded-lg">
+                        <p class="text-sm text-blue-800"><strong>Why it matters:</strong> Estrogen helps keep blood
+                            vessels flexible and helps maintain healthy levels of HDL (good) cholesterol. These benefits
+                            diminish after menopause.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Modifiable Risk Factors -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center text-red-600">Modifiable Risk Factors</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                <!-- High Risk Factors -->
+                <div class="col-span-1 md:col-span-3">
+                    <h3 class="text-2xl font-semibold mb-6 text-center">Major Modifiable Risk Factors</h3>
+                    <p class="text-center mb-8 max-w-3xl mx-auto">These factors have the strongest evidence for
+                        increasing heart disease risk and should be primary targets for prevention.</p>
+                </div>
+
+                <!-- Smoking -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 risk-card"
+                    style="--rotate-value: 60deg;">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-smoking"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Smoking</h3>
+                    <div class="flex justify-center my-4">
+                        <div class="relative w-20 h-20">
+                            <div
+                                class="w-full h-full rounded-full border-4 border-gray-200 flex items-center justify-center">
+                                <i class="fas fa-heart text-2xl text-red-500"></i>
+                            </div>
+                            <div class="absolute top-1/2 left-1/2 w-1 h-10 bg-red-600 risk-meter"
+                                style="transform-origin: bottom center;"></div>
+                        </div>
+                    </div>
+                    <p class="mb-4">Smoking damages blood vessels, reduces oxygen in the blood, and increases blood
+                        pressure and heart rate. It doubles or even quadruples your risk of heart disease.</p>
+                    <div class="mt-4 bg-red-50 p-3 rounded-lg">
+                        <p class="text-sm text-red-800"><strong>Risk reduction:</strong> Quitting smoking can reduce
+                            your risk by up to 50% after one year, and approach that of a non-smoker after 15 years.</p>
+                    </div>
+                </div>
+
+                <!-- High Blood Pressure -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 risk-card"
+                    style="--rotate-value: 45deg;">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">High Blood Pressure</h3>
+                    <div class="flex justify-center my-4">
+                        <div class="relative w-20 h-20">
+                            <div
+                                class="w-full h-full rounded-full border-4 border-gray-200 flex items-center justify-center">
+                                <i class="fas fa-heart text-2xl text-red-500"></i>
+                            </div>
+                            <div class="absolute top-1/2 left-1/2 w-1 h-10 bg-red-600 risk-meter"
+                                style="transform-origin: bottom center;"></div>
+                        </div>
+                    </div>
+                    <p class="mb-4">High blood pressure (hypertension) forces your heart to work harder to pump blood,
+                        damaging arteries and increasing the risk of heart attack, stroke, and heart failure.</p>
+                    <div class="mt-4 bg-red-50 p-3 rounded-lg">
+                        <p class="text-sm text-red-800"><strong>Risk reduction:</strong> Lowering blood pressure through
+                            lifestyle changes and/or medication can significantly reduce your risk of heart disease and
+                            stroke.</p>
+                    </div>
+                </div>
+
+                <!-- High Cholesterol -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 risk-card"
+                    style="--rotate-value: 50deg;">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-vial"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">High Cholesterol</h3>
+                    <div class="flex justify-center my-4">
+                        <div class="relative w-20 h-20">
+                            <div
+                                class="w-full h-full rounded-full border-4 border-gray-200 flex items-center justify-center">
+                                <i class="fas fa-heart text-2xl text-red-500"></i>
+                            </div>
+                            <div class="absolute top-1/2 left-1/2 w-1 h-10 bg-red-600 risk-meter"
+                                style="transform-origin: bottom center;"></div>
+                        </div>
+                    </div>
+                    <p class="mb-4">High levels of LDL ("bad") cholesterol and low levels of HDL ("good") cholesterol
+                        increase the risk of plaque buildup in your arteries, leading to atherosclerosis.</p>
+                    <div class="mt-4 bg-red-50 p-3 rounded-lg">
+                        <p class="text-sm text-red-800"><strong>Risk reduction:</strong> A 10% reduction in total
+                            cholesterol levels can reduce heart disease risk by as much as 30%.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Modifiable Risk Factors -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 staggered">
+                <!-- Physical Inactivity -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-orange-500 text-3xl mb-3 flex justify-center">
+                        <i class="fas fa-couch"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-center">Physical Inactivity</h3>
+                    <p class="text-sm">Regular physical activity strengthens your heart and improves circulation. Lack
+                        of exercise is linked to 6% of heart disease cases worldwide.</p>
+                </div>
+
+                <!-- Obesity -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-orange-500 text-3xl mb-3 flex justify-center">
+                        <i class="fas fa-weight"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-center">Obesity</h3>
+                    <p class="text-sm">Excess weight, especially around the waist, increases the strain on your heart
+                        and contributes to high blood pressure, high cholesterol, and diabetes.</p>
+                </div>
+
+                <!-- Diabetes -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-orange-500 text-3xl mb-3 flex justify-center">
+                        <i class="fas fa-candy-cane"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-center">Diabetes</h3>
+                    <p class="text-sm">High blood sugar damages blood vessels and nerves that control your heart. Adults
+                        with diabetes are 2-4 times more likely to die from heart disease.</p>
+                </div>
+
+                <!-- Poor Diet -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-orange-500 text-3xl mb-3 flex justify-center">
+                        <i class="fas fa-hamburger"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-center">Poor Diet</h3>
+                    <p class="text-sm">Diets high in saturated fats, trans fats, salt, and sugar increase risk factors
+                        like cholesterol, blood pressure, and obesity.</p>
+                </div>
+
+                <!-- Excessive Alcohol -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-orange-500 text-3xl mb-3 flex justify-center">
+                        <i class="fas fa-wine-bottle"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-center">Excessive Alcohol</h3>
+                    <p class="text-sm">Heavy drinking can raise blood pressure, increase certain types of cholesterol,
+                        and contribute to heart muscle damage (cardiomyopathy).</p>
+                </div>
+
+                <!-- Stress -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-orange-500 text-3xl mb-3 flex justify-center">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-center">Stress</h3>
+                    <p class="text-sm">Chronic stress may increase inflammation in your body, raise blood pressure, and
+                        lead to unhealthy coping behaviors like overeating or smoking.</p>
+                </div>
+
+                <!-- Sleep Apnea -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-orange-500 text-3xl mb-3 flex justify-center">
+                        <i class="fas fa-bed"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-center">Sleep Apnea</h3>
+                    <p class="text-sm">This sleep disorder causes breathing to stop and start repeatedly during sleep,
+                        reducing oxygen levels and increasing heart strain.</p>
+                </div>
+
+                <!-- Poor Sleep -->
+                <div class="bg-white p-5 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-orange-500 text-3xl mb-3 flex justify-center">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2 text-center">Poor Sleep</h3>
+                    <p class="text-sm">Regularly sleeping less than 7 hours per night is associated with higher risk of
+                        heart disease, regardless of other factors like age or weight.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Risk Factor Combinations -->
+        <section class="mb-16">
+            <div class="bg-red-50 p-8 rounded-lg">
+                <h2 class="text-3xl font-bold mb-6 text-red-600">The Multiplier Effect</h2>
+                <p class="mb-6">Risk factors don't exist in isolation. When multiple risk factors are present, they can
+                    interact and multiply your overall risk of heart disease, not just add to it.</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 staggered">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-red-600">Risk Factor Combinations</h3>
+                        <p class="mb-4">Consider these examples of how risk factors can interact:</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                <span><strong>Smoking + High Blood Pressure:</strong> These two factors together
+                                    increase heart disease risk more than the sum of their individual risks.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                <span><strong>Diabetes + High Cholesterol:</strong> This combination accelerates damage
+                                    to blood vessels and increases heart attack risk substantially.</span>
+                            </li>
+                            <li class="flex items-start">
+                                <i class="fas fa-times-circle text-red-500 mt-1 mr-2"></i>
+                                <span><strong>Obesity + Physical Inactivity:</strong> Together these create a cycle that
+                                    worsens insulin resistance and inflammation.</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-red-600">Metabolic Syndrome</h3>
+                        <p class="mb-4">Metabolic syndrome is a cluster of conditions that occur together, significantly
+                            increasing your risk of heart disease. You have metabolic syndrome if you have three or more
+                            of these conditions:</p>
+                        <ul class="space-y-2">
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-orange-500 mr-2"></i>
+                                <span>Large waist circumference (≥35" for women, ≥40" for men)</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-orange-500 mr-2"></i>
+                                <span>High triglyceride level (≥150 mg/dL)</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-orange-500 mr-2"></i>
+                                <span>Low HDL cholesterol (<40 mg/dL in men, <50 mg/dL in women)</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-orange-500 mr-2"></i>
+                                <span>High blood pressure (≥130/85 mm Hg)</span>
+                            </li>
+                            <li class="flex items-center">
+                                <i class="fas fa-check-circle text-orange-500 mr-2"></i>
+                                <span>High fasting blood sugar (≥100 mg/dL)</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="mt-8 bg-yellow-50 p-6 rounded-lg border-l-4 border-yellow-400">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-triangle text-yellow-500 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-yellow-800">Important Note</h3>
+                            <p class="text-yellow-700">The good news is that addressing even one risk factor can have
+                                positive effects on others. For example, increasing physical activity can help with
+                                weight management, lower blood pressure, improve cholesterol levels, and reduce stress.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    {% if not user.is_staff %}
+
+
+        <!-- Risk Assessment -->
+        <section>
+            <h2 class="text-3xl font-bold mb-8 text-center text-red-600">Assess Your Personal Risk</h2>
+            <div class="bg-white p-8 rounded-lg shadow-lg text-center">
+                <div class="flex justify-center mb-6">
+                    <i class="fas fa-clipboard-list text-6xl text-blue-500"></i>
+                </div>
+                <h3 class="text-2xl font-semibold mb-4">Ready to understand your heart disease risk?</h3>
+                <p class="mb-6 max-w-2xl mx-auto">Our comprehensive risk assessment tool analyzes your personal risk
+                    factors and provides a detailed report with personalized recommendations.</p>
+                <a href="/assessment"
+                    class="bg-red-600 hover:bg-red-700 text-white px-8 py-4 rounded-lg font-medium text-lg transition duration-300 inline-block">
+                    Take the Risk Assessment
+                </a>
+            </div>
+        </section>
+
+        {% endif %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between ">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">HeartGuard</h3>
+                    <p class="mb-4">Empowering you with knowledge for a healthier heart.</p>
+                   
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Quick Links</h3>
+                    <ul class="flex justify-between  gap-5 ">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition duration-300">Home</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition duration-300">About</a></li>
+                        <li><a href="prevention.html" class="text-gray-400 hover:text-white transition duration-300">Prevention</a></li>
+                        <li><a href="risk-factors.html" class="text-gray-400 hover:text-white transition duration-300">Risk Factors</a></li>
+                        <li><a href="prediction.html" class="text-gray-400 hover:text-white transition duration-300">Risk Assessment</a></li>
+                    </ul>
+                </div>
+                
+              
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 HeartGuard. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const menuToggleButton = document.getElementById('menu-toggle');
+        if (menuToggleButton) {
+            menuToggleButton.addEventListener('click', function () {
+                const mobileMenu = document.getElementById('mobile-menu');
+                if (mobileMenu) { // Also good to check if mobileMenu exists
+                    mobileMenu.classList.toggle('hidden');
+                }
+            });
+        }
+
+        // Animation for staggered elements
+        document.addEventListener('DOMContentLoaded', function () {
+            const staggeredElements = document.querySelectorAll('.staggered > *');
+            staggeredElements.forEach((el, index) => {
+                setTimeout(() => {
+                    el.classList.add('fade-in');
+                }, 100 * index); // Adjust delay as needed, 100ms is reasonable
+            });
+        });
+
+        // Scroll animation (ensure this is working as intended too)
+        // No elements in your current main content sections use 'slide-in',
+        // but if you plan to, this should also be guarded or tested.
+        window.addEventListener('scroll', function () {
+            const elements = document.querySelectorAll('.slide-in');
+            elements.forEach(element => {
+                const position = element.getBoundingClientRect().top;
+                const screenPosition = window.innerHeight / 1.3;
+
+                if (position < screenPosition) {
+                    // Ensure the fadeIn animation is appropriately defined and works with inline style
+                    element.style.animation = 'fadeIn 0.5s ease-out forwards';
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

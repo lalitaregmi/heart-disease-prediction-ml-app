@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - HeartGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* ... (keep existing styles) ... */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .heartbeat {
+            animation: heartbeat 1.5s infinite;
+        }
+        .slide-in {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            overflow-y: auto;
+            padding-top: 2rem; /* Added padding for scrollable modals */
+            padding-bottom: 2rem;
+        }
+        .modal-content {
+            background-color: white;
+            margin: 2% auto; /* Adjusted margin */
+            width: 90%;
+            max-width: 600px; /* Default max-width */
+            border-radius: 0.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        .modal-open {
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navigation -->
+    <nav class="bg-red-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <a href="{% url 'prediction:home' %}" class="flex items-center space-x-2">
+                    <i class="fas fa-heartbeat text-2xl heartbeat"></i>
+                    <span class="font-bold text-xl">HeartGuard</span>
+                </a>
+                <div class="hidden md:flex space-x-6">
+                    <a href="{% url 'prediction:home' %}" class="hover:text-red-200 transition duration-300 font-medium">Home</a>
+                    <a href="{% url 'prediction:about' %}" class="hover:text-red-200 transition duration-300 font-medium">About</a>
+                    <a href="{% url 'prediction:prevention' %}" class="hover:text-red-200 transition duration-300 font-medium">Prevention</a>
+                    <a href="{% url 'prediction:risk' %}" class="hover:text-red-200 transition duration-300 font-medium">Risk Factors</a>
+                    <a href="{% url 'prediction:assessment' %}" class="hover:text-red-200 transition duration-300 font-medium">Risk Assessment</a>
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'prediction:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-left hover:text-red-200 transition duration-300">Logout</button>
+                    </form>
+                    {% endif %}
+                    <!-- Dropdown for Doctor Menu -->
+                    
+
+                    <!-- User Info -->
+                    {% if user.is_authenticated %}
+                        <button class="flex items-center hover:text-red-200 transition duration-300 font-medium">
+                            <i class="fas fa-user-md mr-1"></i>
+                            <span>{{ user.name|default:user.email }}</span>
+                        </button>
+                        
+                    {% endif %}
+                </div>
+                <button class="md:hidden text-white focus:outline-none" id="menu-toggle">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+            <!-- Mobile menu -->
+            <div class="md:hidden hidden" id="mobile-menu">
+                <div class="flex flex-col space-y-4 py-4">
+                    <a href="{% url 'prediction:home' %}" class="hover:text-red-200 transition duration-300">Home</a>
+                    <a href="{% url 'prediction:about' %}" class="hover:text-red-200 transition duration-300">About</a>
+                    <a href="{% url 'prediction:prevention' %}" class="hover:text-red-200 transition duration-300">Prevention</a>
+                    <a href="{% url 'prediction:risk' %}" class="hover:text-red-200 transition duration-300">Risk Factors</a>
+                    <a href="{% url 'prediction:assessment' %}" class="hover:text-red-200 transition duration-300">Risk Assessment</a>
+                    <a href="{% url 'prediction:articles_public_list' %}" class="hover:text-red-200 transition duration-300">Articles</a>
+                    <a href="{% url 'prediction:doctor_dashboard' %}" class="hover:text-red-200 transition duration-300">Doctor Dashboard</a>
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'prediction:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="w-full text-left hover:text-red-200 transition duration-300">Logout</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="bg-gradient-to-r from-red-600 to-red-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold">Doctor Dashboard</h1>
+                    <p class="mt-2 text-red-100">Welcome back, Dr. {{ user.name }}</p>
+                </div>
+                <div class="mt-4 md:mt-0">
+                    <div class="bg-white/20 backdrop-blur-sm rounded-lg px-4 py-3">
+                        <p class="text-sm font-medium">Today's Date</p>
+                        <p class="text-xl font-bold" id="current-date">Loading...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-8">
+
+        <!-- Django Messages Display -->
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="p-4 mb-4 text-sm rounded-lg
+                        {% if message.tags == 'debug' %} bg-gray-100 text-gray-700 {% endif %}
+                        {% if message.tags == 'info' %} bg-blue-100 text-blue-700 {% endif %}
+                        {% if message.tags == 'success' %} bg-green-100 text-green-700 {% endif %}
+                        {% if message.tags == 'warning' %} bg-yellow-100 text-yellow-700 {% endif %}
+                        {% if message.tags == 'error' %} bg-red-100 text-red-700 {% endif %}"
+                        role="alert">
+                        <span class="font-medium">{{ message.tags|capfirst }}!</span> {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Stats Overview -->
+        <section class="mb-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 dashboard-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Total Patients</p>
+                            <p class="text-2xl font-bold">{{ total_patients|default:0 }}</p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-users text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-green-600">
+                            <i class="fas fa-arrow-up mr-1"></i>
+                            <span>{{ new_patients_percent|default:0 }}% from last month</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 dashboard-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">High Risk Patients</p>
+                            <p class="text-2xl font-bold">{{ high_risk_patients|default:0 }}</p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-heartbeat text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-red-600">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            <span>{{ high_risk_percent|default:0 }}% of total patients</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 dashboard-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Articles Published</p>
+                            <p class="text-2xl font-bold">{{ articles_count|default:0 }}</p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-newspaper text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600">
+                            <i class="fas fa-clock mr-1"></i>
+                            <span>Last published {{ last_article_days|default:"N/A" }} days ago</span>
+                        </p>
+                    </div>
+                </div>
+                 <div class="bg-white rounded-lg shadow-md p-6 transition duration-300 dashboard-card">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-gray-500 font-medium">Health Tips</p>
+                            <p class="text-2xl font-bold">{{ tips_count|default:0 }}</p>
+                        </div>
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-lightbulb text-red-600 text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-sm text-gray-600">
+                             <i class="fas fa-eye mr-1"></i>
+                             <span>{{ tips_count|default:0 }} total tips</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="mb-10">
+            <h2 class="text-2xl font-bold mb-6">Quick Actions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <button id="new-article-btn" class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:bg-red-50 flex items-center text-left w-full">
+                    <div class="bg-red-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-plus text-red-600"></i>
+                    </div>
+                    <span class="font-medium">New Article</span>
+                </button>
+
+                <button id="new-tip-btn" class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:bg-red-50 flex items-center text-left w-full">
+                    <div class="bg-red-100 p-3 rounded-full mr-4">
+                        <i class="fas fa-lightbulb text-red-600"></i>
+                    </div>
+                    <span class="font-medium">New Health Tip</span>
+                </button>
+
+              
+                <a href="{% url 'prediction:download_your_data' %}"  class="bg-white rounded-lg shadow-md p-6 transition duration-300 hover:bg-red-50 flex items-center text-left w-full">
+                    
+                    <span class="font-medium">Export Data</span>
+            </a>
+            </div>
+        </section>
+
+         <!-- Recent Articles -->
+        <section class="mb-10">
+            <div class="flex justify-between items-center mb-6 w-full">
+                <h2 class="text-2xl font-bold">Recent Articles</h2>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                {% if recent_articles %}
+                    <div class="space-y-4">
+                        {% for article in recent_articles %}
+                            <div class="border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                                <h3 class="font-medium text-gray-900">{{ article.title }}</h3>
+                                <p class="text-sm text-gray-500 mt-1">{{ article.excerpt|truncatewords:25 }}</p>
+                                <div class="flex justify-between items-center mt-2">
+                                    <span class="text-xs text-gray-500">{{ article.updated_at|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="py-8 text-center text-gray-500">
+                        <i class="fas fa-newspaper text-3xl mb-2"></i>
+                        <p>No recent articles published by you.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- Recent Tips Section -->
+        <section>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Recent Health Tips</h2>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md p-6">
+                {% if recent_tips %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {% for tip in recent_tips %}
+                            <div class="border rounded-lg p-4 hover:shadow-md transition-shadow">
+                                <div class="flex items-center mb-3">
+                                    <div class="bg-red-100 p-2 rounded-full">
+                                        <i class="fas fa-{{ tip.icon|default:'lightbulb' }} text-red-600"></i>
+                                    </div>
+                                    <span class="ml-2 text-xs font-semibold px-2 py-1 rounded bg-blue-100 text-blue-800 capitalize">
+                                        {{ tip.category }}
+                                    </span>
+                                </div>
+                                <h3 class="font-medium text-gray-900 mb-2">{{ tip.title }}</h3>
+                                <p class="text-sm text-gray-500 mb-3">{{ tip.content|truncatewords:20 }}</p>
+                                <div class="flex justify-between items-center text-xs text-gray-500">
+                                    <span>{{ tip.updated_at|date:"M d, Y" }}</span>
+                                    <a href="{% url 'prediction:doctor_tip_update' tip.pk %}" class="text-red-600 hover:text-red-800">Edit</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="py-8 text-center text-gray-500">
+                        <i class="fas fa-lightbulb text-3xl mb-2"></i>
+                        <p>No recent health tips created by you.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-16">
+       <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">HeartGuard</h3>
+                    <p class="mb-4">Empowering you with knowledge for a healthier heart.</p>
+                    <!-- <div class="flex space-x-4">
+                        <a href="#" onclick="alert('Social media link coming soon!'); return false;" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" onclick="alert('Social media link coming soon!'); return false;" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" onclick="alert('Social media link coming soon!'); return false;" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                    </div> -->
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'prediction:home' %}" class="text-gray-400 hover:text-white transition duration-300">Home</a></li>
+                        <li><a href="{% url 'prediction:about' %}" class="text-gray-400 hover:text-white transition duration-300">About</a></li>
+                        <li><a href="{% url 'prediction:prevention' %}" class="text-gray-400 hover:text-white transition duration-300">Prevention</a></li>
+                        <li><a href="{% url 'prediction:risk' %}" class="text-gray-400 hover:text-white transition duration-300">Risk Factors</a></li>
+                        <li><a href="{% url 'prediction:assessment' %}" class="text-gray-400 hover:text-white transition duration-300">Risk Assessment</a></li>
+                        <li><a href="{% url 'prediction:articles_public_list' %}" class="text-gray-400 hover:text-white transition duration-300">Articles</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Doctor Portal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'prediction:doctor_dashboard' %}" class="text-gray-400 hover:text-white transition duration-300">Dashboard</a></li>
+                        <li><a href="{% url 'prediction:doctor_article_list' %}" class="text-gray-400 hover:text-white transition duration-300">Manage Articles</a></li>
+                        <li><a href="{% url 'prediction:doctor_tip_list' %}" class="text-gray-400 hover:text-white transition duration-300">Manage Health Tips</a></li>
+                        <li><a href="{% url 'prediction:doctor_model_info' %}" class="text-gray-400 hover:text-white transition duration-300">Model Info</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Contact</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-center">
+                            <i class="fas fa-envelope mr-2"></i>
+                            <a href="mailto:info@heartguard.com" class="text-gray-400 hover:text-white transition duration-300">info@heartguard.com</a>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fas fa-phone mr-2"></i>
+                            <a href="tel:+1234567890" class="text-gray-400 hover:text-white transition duration-300">+1 (234) 567-890</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>© {% now "Y" %} HeartGuard. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- New Article Modal -->
+    <div id="new-article-modal" class="modal">
+        <div class="modal-content max-w-3xl">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Create New Article</h3>
+                    <button type="button" class="close-modal text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form method="post" action="{% url 'prediction:article_create' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="space-y-4">
+                        <div>
+                            <label for="article-title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                            <input type="text" id="article-title" name="title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Enter article title" required>
+                        </div>
+                        <div>
+                            <label for="article-category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select id="article-category" name="category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" required>
+                                <option value="" selected disabled>Select a category</option>
+                                <option value="Prevention">Prevention</option>
+                                <option value="Risk Factors">Risk Factors</option>
+                                <option value="Treatment">Treatment</option>
+                                <option value="Lifestyle">Lifestyle</option>
+                                <option value="Research">Research</option>
+                                <option value="News">News</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="article-image" class="block text-sm font-medium text-gray-700 mb-1">Featured Image</label>
+                            <input type="file" id="article-image" name="image" accept="image/*" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100">
+                            <p class="mt-1 text-xs text-gray-500">Optional. Recommended size: 1200x800 pixels. Max size: 5MB.</p>
+                        </div>
+                        <div>
+                            <label for="article-excerpt" class="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+                            <textarea id="article-excerpt" name="excerpt" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Brief summary of the article (max 255 characters)" maxlength="255"></textarea>
+                            <p class="mt-1 text-xs text-gray-500">Optional. A short summary shown in list views.</p>
+                        </div>
+                        <div>
+                            <label for="article-content" class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                            <textarea id="article-content" name="content" rows="8" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Write your article content here..." required></textarea>
+                             <p class="mt-1 text-xs text-gray-500">You can use Markdown for formatting.</p>
+                        </div>
+                        <div>
+                            <label for="article-tags" class="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                            <input type="text" id="article-tags" name="tags" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="heart disease, prevention, exercise (comma separated)">
+                             <p class="mt-1 text-xs text-gray-500">Optional. Helps categorize and find articles.</p>
+                        </div>
+                        <div class="flex items-center">
+                            <input type="checkbox" id="article-is-published" name="is_published" value="true" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" checked>
+                            <label for="article-is-published" class="ml-2 block text-sm text-gray-700">Publish immediately</label>
+                        </div>
+                        <input type="hidden" name="is_published" value="false">
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-4">
+                        <button type="button" class="close-modal px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            Cancel
+                        </button>
+                        <button type="submit" name="submit_action" value="save_draft" class="px-6 py-2 border border-red-600 rounded-lg text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Save Draft
+                        </button>
+                        <button type="submit" name="submit_action" value="publish" class="px-6 py-2 border border-transparent rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Publish Article
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- New Health Tip Modal -->
+    <div id="new-tip-modal" class="modal">
+        <div class="modal-content max-w-lg">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Create New Health Tip</h3>
+                    <button type="button" class="close-modal text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <form method="post" action="{% url 'prediction:doctor_tip_create' %}">
+                    {% csrf_token %}
+                    <div class="space-y-4">
+                        <div>
+                            <label for="tip-title" class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                            <input type="text" id="tip-title" name="title" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Enter tip title (e.g., Reduce Salt Intake)" required maxlength="100">
+                        </div>
+                        <div>
+                            <label for="tip-category" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                            <select id="tip-category" name="category" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" required>
+                                <option value="" selected disabled>Select a category</option>
+                                <option value="Diet">Diet</option>
+                                <option value="Exercise">Exercise</option>
+                                <option value="Lifestyle">Lifestyle</option>
+                                <option value="Medication">Medication</option>
+                                <option value="Stress Management">Stress Management</option>
+                                <option value="Monitoring">Monitoring</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="tip-icon" class="block text-sm font-medium text-gray-700 mb-1">Icon</label>
+                            <select id="tip-icon" name="icon" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 font-['FontAwesome']">
+                                <option value="" selected disabled>Select an icon (Optional)</option>
+                                <option value="lightbulb"> Lightbulb</option>
+                                <option value="heartbeat"> Heartbeat</option>
+                                <option value="apple-alt"> Apple</option>
+                                <option value="person-running"> Running</option>
+                                <option value="pills"> Pills</option>
+                                <option value="bed"> Bed (Sleep)</option>
+                                <option value="ban-smoking"> No Smoking</option>
+                                <option value="glass-water"> Water</option>
+                                <option value="weight-scale"> Scale (Weight)</option>
+                                <option value="brain"> Brain (Stress)</option>
+                                <option value="calendar-check"> Calendar (Checkup)</option>
+                            </select>
+                             <p class="mt-1 text-xs text-gray-500">Select a Font Awesome icon name (e.g., 'heartbeat').</p>
+                        </div>
+                        <div>
+                            <label for="tip-content" class="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                            <textarea id="tip-content" name="content" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Write your concise health tip here (max 255 characters)" required maxlength="255"></textarea>
+                        </div>
+                        <div class="flex items-center">
+                             <input type="checkbox" id="tip-is-published" name="is_published" value="true" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded" checked>
+                            <label for="tip-is-published" class="ml-2 block text-sm text-gray-700">Publish immediately</label>
+                        </div>
+                        <input type="hidden" name="is_published" value="false">
+                    </div>
+                    <div class="mt-6 flex justify-end space-x-4">
+                        <button type="button" class="close-modal px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-2 border border-transparent rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Create Tip
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- View All Articles Modal -->
+    <div id="view-all-articles-modal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">All Your Articles</h3>
+                    <button type="button" class="close-modal text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
+                    {% if all_articles_by_doctor %}
+                        {% for article in all_articles_by_doctor %}
+                            <div class="border-b border-gray-200 pb-4 last:border-0 last:pb-0">
+                                <h4 class="font-medium text-gray-900">{{ article.title }}</h4>
+                                <p class="text-sm text-gray-500 mt-1">{{ article.excerpt|truncatewords:25|default:"No excerpt." }}</p>
+                                <div class="flex justify-between items-center mt-2">
+                                    <span class="text-xs text-gray-500">
+                                        Updated: {{ article.updated_at|date:"M d, Y" }}
+                                        {% if article.is_published %}
+                                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full">Published</span>
+                                        {% else %}
+                                            <span class="ml-2 px-2 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-700 rounded-full">Draft</span>
+                                        {% endif %}
+                                    </span>
+                                    <a href="{% url 'prediction:doctor_article_update' article.pk %}" class="text-xs text-red-600 hover:text-red-800">Edit</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="py-8 text-center text-gray-500">
+                            <i class="fas fa-newspaper text-3xl mb-2"></i>
+                            <p>You have not created any articles yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button type="button" class="close-modal px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View All Tips Modal -->
+    <div id="view-all-tips-modal" class="modal">
+        <div class="modal-content max-w-2xl">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">All Your Health Tips</h3>
+                    <button type="button" class="close-modal text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
+                    {% if all_tips_by_doctor %}
+                        {% for tip in all_tips_by_doctor %}
+                            <div class="border rounded-lg p-4 hover:shadow-sm transition-shadow mb-4">
+                                <div class="flex items-start mb-3">
+                                    <div class="bg-red-100 p-3 rounded-full mr-3 mt-1">
+                                        <i class="fas fa-{{ tip.icon|default:'lightbulb' }} text-red-600 text-lg"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <h4 class="font-medium text-gray-900">{{ tip.title }}</h4>
+                                        <div class="flex items-center space-x-2 mt-1">
+                                            <span class="text-xs font-semibold px-2 py-0.5 rounded bg-blue-100 text-blue-800 capitalize">
+                                                {{ tip.category }}
+                                            </span>
+                                            {% if tip.is_published %}
+                                                <span class="px-2 py-0.5 text-xs font-semibold bg-green-100 text-green-700 rounded-full">Published</span>
+                                            {% else %}
+                                                <span class="px-2 py-0.5 text-xs font-semibold bg-yellow-100 text-yellow-700 rounded-full">Not Published</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="text-sm text-gray-600 mb-3 pl-12">{{ tip.content }}</p>
+                                <div class="flex justify-between items-center text-xs text-gray-500 pl-12">
+                                    <span>Updated: {{ tip.updated_at|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+                        {% endfor %}
+                     {% else %}
+                        <div class="py-8 text-center text-gray-500">
+                            <i class="fas fa-lightbulb text-3xl mb-2"></i>
+                            <p>You have not created any health tips yet.</p>
+                        </div>
+                    {% endif %}
+                </div>
+                 <div class="mt-6 flex justify-end">
+                    <button type="button" class="close-modal px-6 py-2 border border-gray-300 rounded-lg text-gray-700 bg-white hover:bg-gray-50">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('menu-toggle')?.addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu?.classList.toggle('hidden');
+        });
+
+        // Set current date
+        document.addEventListener('DOMContentLoaded', function() {
+            const dateElement = document.getElementById('current-date');
+            if (dateElement) {
+                const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                const today = new Date();
+                dateElement.textContent = today.toLocaleDateString('en-US', options);
+            }
+        });
+
+        // Modal functionality
+        const newArticleBtn = document.getElementById('new-article-btn');
+        const newTipBtn = document.getElementById('new-tip-btn');
+        const viewAllArticlesBtn = document.getElementById('view-all-articles-btn');
+        const viewAllTipsBtn = document.getElementById('view-all-tips-btn');
+
+        const newArticleModal = document.getElementById('new-article-modal');
+        const newTipModal = document.getElementById('new-tip-modal');
+        const viewAllArticlesModal = document.getElementById('view-all-articles-modal');
+        const viewAllTipsModal = document.getElementById('view-all-tips-modal');
+
+        const closeButtons = document.querySelectorAll('.close-modal');
+        const body = document.body;
+
+        function openModal(modal) {
+            if (modal) {
+                modal.style.display = 'block';
+                body.classList.add('modal-open');
+                 // Scroll modal to top when opened
+                modal.scrollTop = 0;
+                if (modal.firstElementChild) { // modal-content
+                    modal.firstElementChild.scrollTop = 0;
+                }
+            }
+        }
+
+        function closeModal(modal) {
+             if (modal) {
+                modal.style.display = 'none';
+                if (!document.querySelector('.modal[style*="display: block"]')) {
+                   body.classList.remove('modal-open');
+                }
+            }
+        }
+
+        newArticleBtn?.addEventListener('click', () => openModal(newArticleModal));
+        newTipBtn?.addEventListener('click', () => openModal(newTipModal));
+        viewAllArticlesBtn?.addEventListener('click', () => openModal(viewAllArticlesModal));
+        viewAllTipsBtn?.addEventListener('click', () => openModal(viewAllTipsModal));
+
+
+        closeButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const modal = this.closest('.modal');
+                closeModal(modal);
+            });
+        });
+
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                 closeModal(event.target);
+            }
+        });
+
+
+
+        
+
+    </script>
+</body>
+</html>

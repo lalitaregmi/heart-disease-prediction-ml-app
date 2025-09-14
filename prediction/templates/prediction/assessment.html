@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Risk Assessment - HeartGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+          <!-- Google Fonts: Poppins -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+      
+    <style>
+        @keyframes heartbeat {
+            0% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.1);
+            }
+
+            50% {
+                transform: scale(1);
+            }
+
+            75% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .heartbeat {
+            animation: heartbeat 1.5s infinite;
+        }
+
+        .slide-in {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .staggered>* {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .form-section {
+            transition: all 0.5s ease-in-out;
+            height: auto;
+            /* Use auto for the visible state */
+            overflow: hidden;
+        }
+
+        .form-section.hidden {
+            height: 0;
+            /* Collapse height */
+            opacity: 0;
+            padding-top: 0;
+            /* Remove padding */
+            padding-bottom: 0;
+            margin-top: 0;
+            /* Remove margin */
+            margin-bottom: 0;
+            visibility: hidden;
+            /* Ensure content is not focusable */
+            pointer-events: none;
+            /* Prevent clicks */
+        }
+
+        /* Ensure padding/margin is applied only when section is visible */
+        .form-section:not(.hidden) {
+            padding-top: 1.5rem;
+            /* p-6 */
+            padding-bottom: 1.5rem;
+            /* p-6 */
+            margin-bottom: 2rem;
+            /* mb-8 */
+        }
+
+
+        .meter-needle {
+            transform-origin: bottom center;
+            transition: transform 1.5s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        .result-card {
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.5s ease-out;
+        }
+
+        .result-card.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #d1d5db;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #ef4444;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .progress-bar {
+            transition: width 0.5s ease-in-out;
+        }
+
+        .loading-spinner {
+            border: 4px solid rgba(239, 68, 68, 0.3);
+            /* Lighter red border */
+            border-radius: 50%;
+            border-top: 4px solid #ef4444;
+            /* Red top border */
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Modal Specific Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            /* Ensure it's above everything else */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+        }
+
+
+
+
+   
+
+        .risk-card {
+            background: var(--bg-color);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            max-width: 800px;
+            width: 100%;
+            overflow: hidden; /* Ensures header gradient stays within borders */
+            border: 1px solid var(--border-color);
+        }
+
+        .card-header {
+            background: linear-gradient(45deg, var(--primary-red), var(--dark-red));
+            color: var(--text-light);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .card-header h2 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .card-header .fa-heart-pulse {
+            margin-right: 12px;
+            font-size: 1.8rem;
+        }
+
+        .card-body {
+            padding: 2.5rem;
+        }
+
+        .section-title {
+            color: var(--primary-red);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            margin-top: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--light-red-bg);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .section-title .fa-solid {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+
+        .styled-list {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .styled-list li {
+            padding: 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .styled-list li::before {
+            content: '\f058'; /* Font Awesome check-circle icon */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            color: var(--primary-red);
+            margin-right: 12px;
+            font-size: 1rem;
+        }
+
+        .metric-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .metric-table th, .metric-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .metric-table thead th {
+            background-color: var(--light-red-bg);
+            color: var(--dark-red);
+            font-weight: 600;
+        }
+        
+        .metric-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .metric-table td:last-child {
+            font-weight: 600;
+            text-align: right;
+            color: var(--primary-red);
+        }
+
+        .prediction-box {
+            border-left: 5px solid;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .prediction-box.low-risk {
+            background-color: var(--success-bg);
+            border-color: var(--success-color);
+        }
+
+        .prediction-box.high-risk {
+            background-color: var(--danger-bg);
+            border-color: var(--danger-color);
+        }
+        
+        .prediction-box strong {
+            font-size: 1.1rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .risk-level {
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+        
+        .risk-level.low { color: var(--success-color); }
+        .risk-level.high { color: var(--danger-color); }
+        
+        .prediction-box .fa-solid { margin-right: 8px; }
+
+        .disclaimer {
+            margin-top: 2rem;
+            padding: 1rem;
+            background-color: #f7f7f7;
+            border-radius: 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border: 1px solid var(--border-color);
+        }
+        
+        .disclaimer h5 {
+            color: var(--text-dark);
+            margin: 0 0 0.5rem 0;
+            display: flex;
+            align-items: center;
+        }
+
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navigation -->
+    <nav class="bg-red-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <a href="{% url 'prediction:home' %}" class="flex items-center space-x-2">
+                    <i class="fas fa-heartbeat text-2xl heartbeat"></i>
+                    <span class="font-bold text-xl">HeartGuard</span>
+                </a>
+                <div class="hidden md:flex space-x-6">
+                    <a href="{% url 'prediction:home' %}"
+                        class="hover:text-red-200 transition duration-300 font-medium">Home</a>
+                    <a href="{% url 'prediction:about' %}"
+                        class="hover:text-red-200 transition duration-300 font-medium">About</a>
+                    <a href="{% url 'prediction:prevention' %}"
+                        class="hover:text-red-200 transition duration-300 font-medium">Prevention</a>
+                    <a href="{% url 'prediction:risk' %}"
+                        class="hover:text-red-200 transition duration-300 font-medium">Risk Factors</a>
+                    <a href="{% url 'prediction:assessment' %}"
+                        class="hover:text-red-200 transition duration-300 font-medium">Risk Assessment</a>
+                    {% if user.is_authenticated %}
+                    {% if user.is_staff %} <!-- Doctor Links -->
+                    <a href="{% url 'prediction:doctor_dashboard' %}"
+                        class="hover:text-red-200 ... font-semibold">Doctor Area</a>
+                    {% endif %}
+                    <span class="font-medium">Welcome, {{ user.name|default:user.email }}!</span>
+                    <form action="{% url 'prediction:logout' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-white text-red-600 ...">Logout</button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'prediction:login' %}" class="hover:text-red-200 ...">Login</a>
+                    <a href="{% url 'prediction:signup' %}" class="bg-white text-red-600 ...">Sign Up</a>
+                    {% endif %}
+                </div>
+                <button class="md:hidden text-white focus:outline-none" id="menu-toggle">
+                    <i class="fas fa-bars text-xl"></i>
+                </button>
+            </div>
+            <!-- Mobile menu -->
+            <div class="md:hidden hidden" id="mobile-menu">
+                <div class="flex flex-col space-y-4 py-4">
+                    <a href="{% url 'prediction:home' %}" class="hover:text-red-200 transition duration-300">Home</a>
+                    <a href="{% url 'prediction:about' %}" class="hover:text-red-200 transition duration-300">About</a>
+                    <a href="{% url 'prediction:prevention' %}"
+                        class="hover:text-red-200 transition duration-300">Prevention</a>
+                    <a href="{% url 'prediction:risk' %}" class="hover:text-red-200 transition duration-300">Risk
+                        Factors</a>
+                    <a href="{% url 'prediction:assessment' %}" class="hover:text-red-200 transition duration-300">Risk
+                        Assessment</a>
+                    <a href="{% url 'prediction:articles_public_list' %}"
+                        class="hover:text-red-200 transition duration-300">Articles</a>
+                    {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                    <a href="{% url 'prediction:doctor_dashboard' %}"
+                        class="hover:text-red-200 transition duration-300">Doctor Portal</a>
+                    {% endif %}
+                    <form method="post" action="{% url 'prediction:logout' %}">
+                        {% csrf_token %}
+                        <button type="submit"
+                            class="w-full text-left hover:text-red-200 transition duration-300 bg-transparent border-none p-0 cursor-pointer">Logout</button>
+                    </form>
+                    {% else %}
+                    <a href="{% url 'prediction:login' %}" class="hover:text-red-200 transition duration-300">Login</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="bg-gradient-to-r from-red-600 to-red-800 text-white py-12">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-4">Heart Disease Risk Assessment</h1>
+            <p class="text-xl max-w-3xl mx-auto">Complete this assessment to understand your personal risk factors and
+                receive tailored recommendations.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Form Introduction -->
+        <section class="mb-10 max-w-4xl mx-auto">
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-start">
+                    <div class="mr-4 text-red-500 text-3xl">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold mb-2">About This Assessment</h2>
+                        <p class="mb-4">This assessment tool analyzes various factors to estimate your risk of heart
+                            disease. It's based on established risk factors identified through medical research.</p>
+                        <p class="mb-4">Please answer all questions as accurately as possible. The assessment takes
+                            approximately 5 minutes to complete.</p>
+                        <div class="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
+                            <p class="text-yellow-800"><strong>Note:</strong> This tool provides an estimate only and is
+                                not a substitute for professional medical advice. Always consult with a healthcare
+                                provider for proper diagnosis and treatment.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Progress Bar -->
+        
+
+        {% if user.is_staff %}
+       <div class="card-body">
+    <h4 class="section-title"><i class="fa-solid fa-circle-info"></i>Model Overview</h4>
+    <ul class="styled-list">
+      <li><strong>Model Type:</strong> Random Forest Classifier</li>
+      <li><strong>Trained on:</strong> 319,795 patient records</li>
+      <li><strong>Purpose:</strong> Predict likelihood of heart disease from lifestyle & health indicators</li>
+    </ul>
+
+    <h4 class="section-title"><i class="fa-solid fa-chart-pie"></i>Model Performance</h4>
+    <table class="metric-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Accuracy</td><td>89%</td></tr>
+        <tr><td>F1 Score</td><td>0.895</td></tr>
+        <tr><td>Precision</td><td>89%</td></tr>
+        <tr><td>Recall (Sensitivity)</td><td>90%</td></tr>
+      </tbody>
+    </table>
+
+    <h4 class="section-title"><i class="fa-solid fa-star"></i>Key Prediction Features</h4>
+    <ul class="styled-list">
+      <li>Age Category</li>
+      <li>General Health</li>
+      <li>Stroke History</li>
+      <li>Diabetes</li>
+      <li>Physical Activity</li>
+      <li>BMI</li>
+    </ul>
+
+    <h4 class="section-title"><i class="fa-solid fa-vials"></i>Sample Predictions</h4>
+    <div class="prediction-box low-risk">
+      <strong>Patient Risk Level: <span class="risk-level low">LOW</span></strong>
+      <p><i class="fa-solid fa-check-circle"></i>No major risk indicators detected. The model predicts a very low probability of heart disease.</p>
+    </div>
+
+    <div class="prediction-box high-risk mt-3">
+      <strong>Patient Risk Level: <span class="risk-level high">HIGH</span></strong>
+      <p><i class="fa-solid fa-triangle-exclamation"></i>Influencing Factors: Diabetes, Stroke History, Poor Sleep, Lack of Exercise. Probability of 0.66 suggests elevated risk.</p>
+    </div>
+
+    <div class="disclaimer">
+      <h5><i class="fa-solid fa-shield-halved"></i>Disclaimer</h5>
+      <p>This model is a clinical decision-support tool, not a diagnostic device. Predictions should always be interpreted alongside professional medical judgment.</p>
+    </div>
+  </div>
+</div>
+
+
+        {% endif %}
+
+
+        {% if not user.is_staff %}
+
+
+
+        <div class="max-w-4xl mx-auto mb-8">
+            <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                <div class="bg-red-600 h-2.5 rounded-full progress-bar" style="width: 0%"></div>
+            </div>
+            <div class="flex justify-between text-sm text-gray-500">
+                <span>Start</span>
+                <span id="progress-text">0% Complete</span>
+                <span>Finish</span>
+            </div>
+        </div>
+
+        <!-- Assessment Form -->
+        <form id="risk-assessment-form" class="max-w-4xl mx-auto">
+            {% csrf_token %}
+            <!-- Section 1: Basic Information -->
+            <section id="section-1" class="form-section bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-red-600">Basic Information</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Sex -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Sex</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="Sex" value="Male" class="mr-2" required>
+                                <span>Male</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="Sex" value="Female" class="mr-2">
+                                <span>Female</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Age Category -->
+                    <div>
+                        <label for="AgeCategory" class="block text-gray-700 font-medium mb-2">Age Category</label>
+                        <select id="AgeCategory" name="AgeCategory"
+                            class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                            required>
+                            <option value="" disabled selected>Select your age range</option>
+                            <option value="18-24">18-24</option>
+                            <option value="25-29">25-29</option>
+                            <option value="30-34">30-34</option>
+                            <option value="35-39">35-39</option>
+                            <option value="40-44">40-44</option>
+                            <option value="45-49">45-49</option>
+                            <option value="50-54">50-54</option>
+                            <option value="55-59">55-59</option>
+                            <option value="60-64">60-64</option>
+                            <option value="65-69">65-69</option>
+                            <option value="70-74">70-74</option>
+                            <option value="75-79">75-79</option>
+                            <option value="80 or older">80 or older</option>
+                        </select>
+                    </div>
+                    <!-- Race -->
+                    <div>
+                        <label for="Race" class="block text-gray-700 font-medium mb-2">Race</label>
+                        <select id="Race" name="Race"
+                            class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                            required>
+                            <option value="" disabled selected>Select your race</option>
+                            <option value="White">White</option>
+                            <option value="Black">Black</option>
+                            <option value="Asian">Asian</option>
+                            <option value="American Indian/Alaskan Native">American Indian/Alaskan Native</option>
+                            <option value="Hispanic">Hispanic</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <!-- BMI -->
+                    <div>
+                        <label for="BMI" class="block text-gray-700 font-medium mb-2">BMI</label>
+                        <div class="flex items-center">
+                            <input type="number" id="BMI" name="BMI" min="10" max="100" step="0.1"
+                                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                                required>
+                            <div class="ml-2 text-sm text-gray-500 cursor-pointer group relative"
+                                id="bmi-calculator-toggle">
+                                <i class="fas fa-calculator"></i>
+                                <div
+                                    class="hidden group-hover:block absolute right-0 bg-white p-3 rounded-md shadow-lg z-10 w-64">
+                                    <p class="mb-2 text-xs">Calculate your BMI:</p>
+                                    <div class="space-y-2">
+                                        <div>
+                                            <label class="text-xs">Height (cm)</label>
+                                            <input type="number" id="height-cm"
+                                                class="w-full p-1 border border-gray-300 rounded-md text-xs"
+                                                placeholder="e.g., 175">
+                                        </div>
+                                        <div>
+                                            <label class="text-xs">Weight (kg)</label>
+                                            <input type="number" id="weight-kg"
+                                                class="w-full p-1 border border-gray-300 rounded-md text-xs"
+                                                placeholder="e.g., 70">
+                                        </div>
+                                        <button type="button" id="calculate-bmi"
+                                            class="mt-2 bg-red-500 text-white text-xs py-1 px-2 rounded-md hover:bg-red-600">Calculate</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-1 text-sm text-gray-500">
+                            <span>Underweight: <18.5 | Normal: 18.5-24.9 | Overweight: 25-29.9 | Obese: ≥30</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end">
+                    <button type="button"
+                        class="next-section bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-300">
+                        Next <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Section 2: Lifestyle Factors -->
+            <section id="section-2" class="form-section hidden bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-red-600">Lifestyle Factors</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Smoking -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Do you smoke?</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="Smoking" value="Yes" class="mr-2" required> <span>Yes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="Smoking" value="No" class="mr-2"> <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Alcohol Drinking -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Do you drink alcohol?</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="AlcoholDrinking" value="Yes" class="mr-2" required>
+                                <span>Yes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="AlcoholDrinking" value="No" class="mr-2"> <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Physical Activity -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Do you engage in regular physical
+                            activity?</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="PhysicalActivity" value="Yes" class="mr-2" required>
+                                <span>Yes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="PhysicalActivity" value="No" class="mr-2"> <span>No</span>
+                            </label>
+                        </div>
+                        <div class="mt-1 text-sm text-gray-500">
+                            <span>Regular physical activity means at least 150 minutes of moderate activity per
+                                week</span>
+                        </div>
+                    </div>
+                    <!-- Sleep Time -->
+                    <div>
+                        <label for="SleepTime" class="block text-gray-700 font-medium mb-2">Average hours of sleep per
+                            night</label>
+                        <div class="flex items-center">
+                            <input type="range" id="SleepTime" name="SleepTime" min="1" max="24" value="7"
+                                class="w-full" required>
+                            <span id="sleep-value" class="ml-2 w-8 text-center">7</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>1</span>
+                            <span>8</span>
+                            <span>16</span>
+                            <span>24</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-between">
+                    <button type="button"
+                        class="prev-section bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-300">
+                        <i class="fas fa-arrow-left mr-1"></i> Previous
+                    </button>
+                    <button type="button"
+                        class="next-section bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-300">
+                        Next <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Section 3: Health Conditions -->
+            <section id="section-3" class="form-section hidden bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-red-600">Health Conditions</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Stroke -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Have you ever had a stroke?</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="Stroke" value="Yes" class="mr-2" required> <span>Yes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="Stroke" value="No" class="mr-2"> <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Diabetic -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Do you have diabetes?</label>
+                        <div class="flex space-x-4 flex-wrap">
+                            <label class="flex items-center mr-4">
+                                <input type="radio" name="Diabetic" value="Yes" class="mr-2" required> <span>Yes</span>
+                            </label>
+                            <label class="flex items-center mr-4">
+                                <input type="radio" name="Diabetic" value="No" class="mr-2"> <span>No</span>
+                            </label>
+                            <label class="flex items-center mr-4">
+                                <input type="radio" name="Diabetic" value="No, borderline diabetes" class="mr-2">
+                                <span>No, borderline</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="Diabetic" value="Yes (during pregnancy)" class="mr-2">
+                                <span>Yes (pregnancy)</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Asthma -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Do you have asthma?</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="Asthma" value="Yes" class="mr-2" required> <span>Yes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="Asthma" value="No" class="mr-2"> <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Kidney Disease -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Do you have kidney disease?</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="KidneyDisease" value="Yes" class="mr-2" required>
+                                <span>Yes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="KidneyDisease" value="No" class="mr-2"> <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Skin Cancer -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Do you have skin cancer?</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="SkinCancer" value="Yes" class="mr-2" required>
+                                <span>Yes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="SkinCancer" value="No" class="mr-2"> <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <!-- Difficulty Walking -->
+                    <div>
+                        <label class="block text-gray-700 font-medium mb-2">Do you have difficulty walking or climbing
+                            stairs?</label>
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="DiffWalking" value="Yes" class="mr-2" required>
+                                <span>Yes</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="DiffWalking" value="No" class="mr-2"> <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-between">
+                    <button type="button"
+                        class="prev-section bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-300">
+                        <i class="fas fa-arrow-left mr-1"></i> Previous
+                    </button>
+                    <button type="button"
+                        class="next-section bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition duration-300">
+                        Next <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Section 4: Health Status -->
+            <section id="section-4" class="form-section hidden bg-white p-6 rounded-lg shadow-md mb-8">
+                <h3 class="text-xl font-semibold mb-4 text-red-600">Health Status</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- General Health -->
+                    <div>
+                        <label for="GenHealth" class="block text-gray-700 font-medium mb-2">How would you rate your
+                            general health?</label>
+                        <select id="GenHealth" name="GenHealth"
+                            class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                            required>
+                            <option value="" disabled selected>Select an option</option>
+                            <option value="Excellent">Excellent</option>
+                            <option value="Very good">Very good</option>
+                            <option value="Good">Good</option>
+                            <option value="Fair">Fair</option>
+                            <option value="Poor">Poor</option>
+                        </select>
+                    </div>
+                    <!-- Physical Health -->
+                    <div>
+                        <label for="PhysicalHealth" class="block text-gray-700 font-medium mb-2">Physical health not
+                            good (days per month)</label>
+                        <div class="flex items-center">
+                            <input type="range" id="PhysicalHealth" name="PhysicalHealth" min="0" max="30" value="0"
+                                class="w-full" required>
+                            <span id="physical-health-value" class="ml-2 w-8 text-center">0</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>0</span><span>10</span><span>20</span><span>30</span>
+                        </div>
+                        <div class="mt-1 text-sm text-gray-500">
+                            <span>Days in the past 30 days when your physical health was not good</span>
+                        </div>
+                    </div>
+                    <!-- Mental Health -->
+                    <div>
+                        <label for="MentalHealth" class="block text-gray-700 font-medium mb-2">Mental health not good
+                            (days per month)</label>
+                        <div class="flex items-center">
+                            <input type="range" id="MentalHealth" name="MentalHealth" min="0" max="30" value="0"
+                                class="w-full" required>
+                            <span id="mental-health-value" class="ml-2 w-8 text-center">0</span>
+                        </div>
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>0</span><span>10</span><span>20</span><span>30</span>
+                        </div>
+                        <div class="mt-1 text-sm text-gray-500">
+                            <span>Days in the past 30 days when your mental health was not good</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-between">
+                    <button type="button"
+                        class="prev-section bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition duration-300">
+                        <i class="fas fa-arrow-left mr-1"></i> Previous
+                    </button>
+                    <button type="submit" id="submit-assessment"
+                        class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition duration-300">
+                        Submit Assessment
+                    </button>
+                </div>
+            </section>
+        </form>
+
+        <!-- Processing Indicator (Initially Hidden) -->
+        <div id="processing-indicator" class="hidden max-w-4xl mx-auto text-center py-12">
+            <div class="flex flex-col items-center">
+                <div class="loading-spinner mb-4"></div>
+                <h3 class="text-xl font-semibold mb-2">Processing Your Assessment</h3>
+                <p class="text-gray-600">Please wait while we analyze your risk factors...</p>
+            </div>
+        </div>
+
+        <!-- Results Section (Initially Hidden) -->
+        <section id="results-section" class="hidden max-w-4xl mx-auto">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+                <h2 class="text-2xl font-bold mb-6 text-center">Your Heart Disease Risk Assessment</h2>
+
+                <div class="flex justify-center mb-8">
+                    <!-- Main Meter Container -->
+                    <div class="relative w-64 h-32">
+                        <!-- SVG Background for the Meter Arc -->
+                        <svg class="absolute w-full h-full" viewBox="0 0 200 100">
+                            <defs>
+                                <linearGradient id="riskGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#22c55e;stop-opacity:1" />
+                                    <stop offset="50%" style="stop-color:#eab308;stop-opacity:1" />
+                                    <stop offset="100%" style="stop-color:#ef4444;stop-opacity:1" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M 20 100 A 80 80 0 0 1 180 100" fill="url(#riskGradient)" stroke="#d1d5db"
+                                stroke-width="10" />
+                            <path d="M 20 100 A 80 80 0 0 1 180 100" fill="none" stroke="#fff" stroke-width="4"
+                                stroke-dasharray="2, 8" />
+                        </svg>
+
+                        <!-- The Rotating Needle Element -->
+                        <div id="risk-needle" class="absolute bottom-1 left-1/2 transform -translate-x-1/2 meter-needle"
+                            style="height: 75px; width:3px; transform-origin: bottom center; transform: translateX(-50%) rotate(0deg);">
+                            <div class="w-full h-full bg-gray-800 rounded-t-full"></div> <!-- Needle Shaft -->
+                            <div class="absolute -top-1 -left-1 w-5 h-5 rounded-full bg-gray-800 border-2 border-white">
+                            </div> <!-- Needle Pivot -->
+                        </div>
+
+                        <!-- Static Text Labels - MOVED OUTSIDE of risk-needle -->
+                        <div class="absolute left-0 w-full flex justify-between px-2" style="bottom: -10px;">
+                            <span class="text-xs font-bold text-green-700">Low</span>
+                            <span class="text-xs font-bold text-yellow-700">Moderate</span>
+                            <span class="text-xs font-bold text-red-700">High</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center mb-8">
+                    <h3 class="text-xl font-bold mb-2">Your Estimated Risk Level:</h3>
+                    <div id="risk-level" class="text-3xl font-bold text-yellow-600">Calculating...</div>
+                    <p id="risk-probability" class="text-lg text-gray-700 mt-1">Probability of High Risk: <span
+                            id="probability-value">--</span></p>
+                    <p id="risk-description" class="mt-2 text-gray-600">Please wait while we analyze your results.</p>
+                    <p id="db-message" class="mt-2 text-sm text-blue-600"></p>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold mb-4">Recommendations:</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="recommendations-container">
+                        <!-- Placeholder while loading -->
+                        <div class="bg-gray-100 p-4 rounded-lg animate-pulse">
+                            <div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                            <div class="h-4 bg-gray-300 rounded w-full mb-2"></div>
+                            <div class="h-4 bg-gray-300 rounded w-5/6"></div>
+                        </div>
+                        <div class="bg-gray-100 p-4 rounded-lg animate-pulse">
+                            <div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div>
+                            <div class="h-4 bg-gray-300 rounded w-full mb-2"></div>
+                            <div class="h-4 bg-gray-300 rounded w-5/6"></div>
+                        </div>
+                    </div>
+                </div>
+
+                
+                
+                <div class="flex flex-col md:flex-row justify-center space-y-4 md:space-y-0 md:space-x-4">
+                    <a href="{% url 'prediction:prevention' %}"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-lg text-center hover:bg-blue-700 transition duration-300">
+                    <i class="fas fa-shield-alt mr-2"></i> View Prevention Tips
+                </a>
+                <a href="{% url 'prediction:home' %}"
+                class="bg-red-600 text-white px-6 py-3 rounded-lg text-center hover:bg-red-700 transition duration-300">
+                <i class="fas fa-home mr-2"></i> Return to Home
+            </a>
+                    <!-- <button id="share-results"
+                    class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition duration-300">
+                    <i class="fas fa-share-alt mr-2"></i> Share Results (Coming Soon)
+                </button> -->
+            </div>
+            <div class="mt-6 text-center">
+                <button id="retake-assessment" class="text-red-600 hover:text-red-800 font-medium">
+                    <i class="fas fa-redo mr-1"></i> Retake Assessment
+                </button>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+</main>
+
+    <!-- Login Required Modal (Initially Hidden) -->
+    <div id="login-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h3 class="text-xl font-bold mb-4 text-red-600">Login Required</h3>
+            <p class="mb-6 text-gray-700">You need to be logged in to submit the assessment and save your results.</p>
+            <div class="flex justify-center space-x-4">
+                <a href="{% url 'prediction:login' %}"
+                    class="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition duration-300">Login /
+                    Register</a>
+                <button id="cancel-login"
+                    class="bg-gray-300 text-gray-800 px-6 py-2 rounded-md hover:bg-gray-400 transition duration-300">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-16">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between ">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">HeartGuard</h3>
+                    <p class="mb-4">Empowering you with knowledge for a healthier heart.</p>
+                   
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Quick Links</h3>
+                    <ul class="flex justify-between  gap-5 ">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition duration-300">Home</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition duration-300">About</a></li>
+                        <li><a href="prevention.html" class="text-gray-400 hover:text-white transition duration-300">Prevention</a></li>
+                        <li><a href="risk-factors.html" class="text-gray-400 hover:text-white transition duration-300">Risk Factors</a></li>
+                        <li><a href="prediction.html" class="text-gray-400 hover:text-white transition duration-300">Risk Assessment</a></li>
+                    </ul>
+                </div>
+                
+              
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 HeartGuard. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('menu-toggle')?.addEventListener('click', function () {
+            const mobileMenu = document.getElementById('mobile-menu');
+            mobileMenu?.classList.toggle('hidden');
+        });
+
+        // Add a variable to check if the user is authenticated
+        const userIsAuthenticated = {% if user.is_authenticated %}true{% else %} false{% endif %};
+
+        let currentSection = 1;
+        const totalSections = 4;
+        const formElement = document.getElementById('risk-assessment-form');
+        const processingIndicator = document.getElementById('processing-indicator');
+        const resultsSection = document.getElementById('results-section');
+        const loginModal = document.getElementById('login-modal');
+        const loginButton = document.getElementById('login-button');
+        const cancelLoginButton = document.getElementById('cancel-login');
+
+        function showLoginModal() {
+            loginModal.classList.remove('hidden');
+        }
+
+        function hideLoginModal() {
+            loginModal.classList.add('hidden');
+        }
+
+        function updateProgressBar() {
+            let progress = ((currentSection - 1) / (totalSections - 1)) * 100;
+            if (currentSection > totalSections) {
+                progress = 100;
+            } else if (currentSection === 1) {
+                progress = 0;
+            }
+            document.querySelector('.progress-bar').style.width = `${progress}%`;
+            document.getElementById('progress-text').textContent = `${Math.round(progress)}% Complete`;
+        }
+
+        function showSection(sectionNumber) {
+            document.querySelectorAll('.form-section').forEach(section => section.classList.add('hidden'));
+            const targetSection = document.getElementById(`section-${sectionNumber}`);
+            if (targetSection) {
+                targetSection.classList.remove('hidden');
+                if (currentSection !== 1 || sectionNumber !== 1) {
+                    targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+            currentSection = sectionNumber;
+            updateProgressBar();
+        }
+
+        document.querySelectorAll('.next-section').forEach(button => {
+            button.addEventListener('click', function () {
+                const currentSectionEl = document.getElementById(`section-${currentSection}`);
+                const inputs = currentSectionEl.querySelectorAll('input[required], select[required], textarea[required]');
+                let isValid = true;
+
+                inputs.forEach(input => {
+                    input.classList.remove('border-red-500', 'ring-red-500');
+                    let fieldIsValid = true;
+                    if (input.type === 'radio') {
+                        const name = input.name;
+                        if (!currentSectionEl.querySelector(`input[name="${name}"]:checked`)) {
+                            fieldIsValid = false;
+                        }
+                    } else if (input.tagName === 'SELECT' && input.value === '') {
+                        fieldIsValid = false;
+                    } else if (!input.value.trim()) {
+                        fieldIsValid = false;
+                    }
+
+                    if (!fieldIsValid) {
+                        isValid = false;
+                        let labelToHighlight = null;
+                        if (input.type === 'radio') {
+                            const container = input.closest('div');
+                            if (container) {
+                                labelToHighlight = container.querySelector('label.block');
+                            }
+                        } else {
+                            labelToHighlight = input.labels ? input.labels[0] : currentSectionEl.querySelector(`label[for="${input.id}"]`);
+                        }
+
+                        if (labelToHighlight) {
+                            if (labelToHighlight._timeout) clearTimeout(labelToHighlight._timeout);
+                            labelToHighlight.classList.add('text-red-500', 'font-bold');
+                            labelToHighlight._timeout = setTimeout(() => {
+                                labelToHighlight.classList.remove('text-red-500', 'font-bold');
+                                labelToHighlight._timeout = null;
+                            }, 3000);
+                        } else {
+                            if (input._timeout) clearTimeout(input._timeout);
+                            input.classList.add('border-red-500', 'ring-red-500');
+                            input._timeout = setTimeout(() => {
+                                input.classList.remove('border-red-500', 'ring-red-500');
+                                input._timeout = null;
+                            }, 3000);
+                        }
+                        if (input.type === 'radio' && !fieldIsValid) {
+                            const name = input.name;
+                            currentSectionEl.querySelectorAll(`input[name="${name}"]`).forEach(radio => {
+                                const radioLabel = radio.closest('label');
+                                if (radioLabel) {
+                                    if (radioLabel._timeout) clearTimeout(radioLabel._timeout);
+                                    radioLabel.classList.add('text-red-500', 'font-bold');
+                                    radioLabel._timeout = setTimeout(() => {
+                                        radioLabel.classList.remove('text-red-500', 'font-bold');
+                                        radioLabel._timeout = null;
+                                    }, 3000);
+                                }
+                            });
+                        }
+                    }
+                });
+
+                if (isValid && currentSection < totalSections) {
+                    showSection(currentSection + 1);
+                } else if (!isValid) {
+                    alert("Please fill in all required fields in the current section.");
+                }
+            });
+        });
+
+        document.querySelectorAll('.prev-section').forEach(button => {
+            button.addEventListener('click', () => showSection(currentSection - 1));
+        });
+
+        ['SleepTime', 'PhysicalHealth', 'MentalHealth'].forEach(id => {
+            const slider = document.getElementById(id);
+            let displayId = id.toLowerCase();
+            if (displayId === 'sleeptime') displayId = 'sleep-value';
+            if (displayId === 'physicalhealth') displayId = 'physical-health-value';
+            if (displayId === 'mentalhealth') displayId = 'mental-health-value';
+            const valueDisplay = document.getElementById(displayId);
+            if (slider && valueDisplay) {
+                slider.addEventListener('input', () => valueDisplay.textContent = slider.value);
+                valueDisplay.textContent = slider.value;
+            }
+        });
+
+        document.getElementById('calculate-bmi')?.addEventListener('click', function () {
+            const height = parseFloat(document.getElementById('height-cm').value);
+            const weight = parseFloat(document.getElementById('weight-kg').value);
+            if (height > 0 && weight > 0) {
+                const heightMeters = height / 100;
+                document.getElementById('BMI').value = (weight / (heightMeters * heightMeters)).toFixed(1);
+            } else {
+                alert("Please enter valid height (cm) and weight (kg).");
+            }
+        });
+
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        formElement.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            if (!userIsAuthenticated) {
+                showLoginModal();
+                return;
+            }
+
+            const formData = new FormData(this);
+
+            formElement.style.display = 'none';
+            document.querySelector('.progress-bar').parentElement.parentElement.style.display = 'none';
+            resultsSection.classList.add('hidden');
+            processingIndicator.classList.remove('hidden');
+            processingIndicator.scrollIntoView({ behavior: 'smooth' });
+
+            console.log(formData);
+
+            fetch("{% url 'prediction:assessment' %}", {
+                method: 'POST',
+                headers: { 'X-CSRFToken': csrftoken },
+                body: formData
+            })
+                .then(response => {
+                    const contentType = response.headers.get("content-type");
+                    if (response.status === 403 && contentType && contentType.indexOf("html") !== -1) {
+                        throw new Error("Authentication required or session expired.");
+                    }
+                    if (!response.ok) {
+                        return response.json().then(errData => {
+                            throw new Error(errData.error || `Server error: ${response.status}`);
+                        }).catch(() => {
+                            throw new Error(`Server error: ${response.status} ${response.statusText}. Please try again later.`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Data received from backend:", data);
+                    processingIndicator.classList.add('hidden');
+                    resultsSection.classList.remove('hidden');
+
+                    if (data.login_required) {
+                        showLoginModal();
+                        formElement.style.display = 'block';
+                        document.querySelector('.progress-bar').parentElement.parentElement.style.display = 'block';
+                        resultsSection.classList.add('hidden');
+                    } else if (data.success && data.results) {
+                        displayBackendResults(data.results, data.db_message);
+                        if (userIsAuthenticated) {
+                            localStorage.setItem('lastAssessmentResult', JSON.stringify(data.results));
+                            localStorage.setItem('lastAssessmentTimestamp', new Date().toISOString());
+                        } else {
+                            localStorage.removeItem('lastAssessmentResult');
+                            localStorage.removeItem('lastAssessmentTimestamp');
+                        }
+                        resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    } else {
+                        displayError(data.error || "An unknown error occurred or results are missing.");
+                        resultsSection.scrollIntoView({ behavior: 'smooth' });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error during assessment submission:', error);
+                    processingIndicator.classList.add('hidden');
+                    resultsSection.classList.remove('hidden');
+                    displayError(`Failed to get prediction: ${error.message}. Please try again.`);
+                    resultsSection.scrollIntoView({ behavior: 'smooth' });
+                });
+        });
+
+        function displayBackendResults(resultsData, dbMessage) {
+            const riskLevelEl = document.getElementById('risk-level');
+            const probabilityValueEl = document.getElementById('probability-value');
+            const riskDescriptionEl = document.getElementById('risk-description');
+            const riskNeedleEl = document.getElementById('risk-needle');
+            const recommendationsContainerEl = document.getElementById('recommendations-container');
+            const dbMessageEl = document.getElementById('db-message');
+
+            if (!resultsData || typeof resultsData.probability_of_high_risk === 'undefined' || typeof resultsData.predicted_condition_text === 'undefined') {
+                console.error("CRITICAL: Incomplete resultsData received in displayBackendResults:", resultsData);
+                displayError("Received incomplete result data from server.");
+                return;
+            }
+
+            const probHighRisk = parseFloat(resultsData.probability_of_high_risk);
+            if (isNaN(probHighRisk)) {
+                console.error("CRITICAL: probHighRisk is NaN. Original value:", resultsData.probability_of_high_risk);
+                displayError("Invalid probability value received from server.");
+                return;
+            }
+
+            const probHighRiskPercent = (probHighRisk * 100).toFixed(1);
+
+            riskLevelEl.className = 'text-3xl font-bold';
+
+            let textualRiskLevel = resultsData.predicted_condition_text;
+            let riskDescription = "";
+
+            if (probHighRisk < 0.20) {
+                textualRiskLevel = "Low Risk";
+                riskLevelEl.classList.add('text-green-600');
+                riskDescription = "Your assessment indicates a low estimated risk of heart disease. Keep up the healthy habits!";
+                if (resultsData.predicted_condition_text === "High Risk") {
+                    riskDescription += " (Note: The model's direct prediction was 'High Risk', but the calculated probability is low. Please discuss with a doctor for clarity.)";
+                }
+            } else if (probHighRisk < 0.50) {
+                textualRiskLevel = "Moderate Risk";
+                riskLevelEl.classList.add('text-yellow-600');
+                riskDescription = "Your assessment indicates a moderate estimated risk. Review your factors and consider the recommendations.";
+            } else {
+                textualRiskLevel = "High Risk";
+                riskLevelEl.classList.add('text-red-600');
+                riskDescription = "Your assessment indicates a higher estimated risk of heart disease. Please review the recommendations carefully and consult your doctor.";
+                if (resultsData.predicted_condition_text === "Low Risk") {
+                    riskDescription += " (Note: The model's direct prediction was 'Low Risk', but the calculated probability is high. Urgently discuss with a doctor.)";
+                }
+            }
+
+            riskLevelEl.textContent = textualRiskLevel;
+            riskDescriptionEl.textContent = riskDescription;
+
+            // --- FIX STARTS HERE ---
+            // The bug was here. It was multiplying the percentage string by 10.
+            // This now correctly displays the percentage.
+            probabilityValueEl.textContent = `${probHighRiskPercent}%`;
+            // --- FIX ENDS HERE ---
+
+            const meterAngleRange = 140;
+            const minAngle = -(meterAngleRange / 2); // Result: -70 degrees
+            // This calculation is correct if probHighRisk is a value between 0.0 and 1.0
+            let needleRotation = (probHighRisk * meterAngleRange) + minAngle;
+            // Clamp the value to ensure it stays within the meter's visual range
+            needleRotation = Math.max(minAngle, Math.min(-minAngle, needleRotation));
+
+            // This is a great debugging line to check if the calculation is working as expected.
+            console.log(`DEBUG METER: probHighRisk (0-1): ${probHighRisk}, calculated needleRotation (deg): ${needleRotation}`);
+
+            // This line applies the rotation to the needle. It should now move correctly.
+            riskNeedleEl.style.transform = `translateX(-50%) rotate(${needleRotation}deg)`;
+
+            recommendationsContainerEl.innerHTML = '';
+            if (resultsData.recommendations && resultsData.recommendations.length > 0) {
+                resultsData.recommendations.forEach((rec, index) => {
+                    const div = document.createElement('div');
+                    let cardClass = 'bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500 text-blue-700 result-card';
+                    let titleClass = 'font-semibold text-blue-800 flex items-center';
+                    let iconClass = 'fas fa-check-circle mr-2';
+
+                    if (probHighRisk >= 0.5) {
+                        cardClass = 'bg-red-50 p-4 rounded-lg border-l-4 border-red-500 text-red-700 result-card';
+                        titleClass = 'font-semibold text-red-800 flex items-center';
+                        iconClass = 'fas fa-exclamation-triangle mr-2';
+                    } else if (probHighRisk >= 0.2) {
+                        cardClass = 'bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-500 text-yellow-700 result-card';
+                        titleClass = 'font-semibold text-yellow-800 flex items-center';
+                        iconClass = 'fas fa-info-circle mr-2';
+                    }
+                    div.className = cardClass;
+                    div.innerHTML = `<h4 class="${titleClass}"><i class="${iconClass}"></i> ${rec.title}</h4><p class="mt-1">${rec.text}</p>`;
+                    recommendationsContainerEl.appendChild(div);
+                    setTimeout(() => div.classList.add('show'), index * 150);
+                });
+            } else {
+                recommendationsContainerEl.innerHTML = `<div class="bg-gray-50 p-4 rounded-lg text-gray-700"><p class="font-semibold mb-2">Next Steps:</p><p>Maintain a healthy lifestyle focusing on diet, exercise, and managing stress.</p><p class="mt-2">For personalized advice, discuss your assessment results and risk factors with your healthcare provider.</p></div>`;
+            }
+            dbMessageEl.textContent = dbMessage || '';
+        }
+
+        function displayError(errorMessage) {
+            const riskLevelEl = document.getElementById('risk-level');
+            const probabilityValueEl = document.getElementById('probability-value');
+            const riskDescriptionEl = document.getElementById('risk-description');
+            const recommendationsContainerEl = document.getElementById('recommendations-container');
+            const dbMessageEl = document.getElementById('db-message');
+            const riskNeedleEl = document.getElementById('risk-needle');
+
+            riskLevelEl.textContent = "Error";
+            riskLevelEl.className = 'text-3xl font-bold text-red-600';
+            probabilityValueEl.textContent = '--';
+            riskDescriptionEl.textContent = errorMessage;
+            recommendationsContainerEl.innerHTML = '<p class="text-red-700 p-4 bg-red-50 rounded-lg border-l-4 border-red-500">Could not load recommendations due to an error.</p>';
+            riskNeedleEl.style.transform = `translateX(-50%) rotate(0deg)`;
+            dbMessageEl.textContent = '';
+        }
+
+        document.getElementById('share-results')?.addEventListener('click', () => {
+            alert('Share Results feature is coming soon!');
+        });
+
+        document.getElementById('retake-assessment')?.addEventListener('click', () => {
+            formElement.reset();
+            currentSection = 1;
+            showSection(1);
+            formElement.style.display = 'block';
+            document.querySelector('.progress-bar').parentElement.parentElement.style.display = 'block';
+            resultsSection.classList.add('hidden');
+            processingIndicator.classList.add('hidden');
+            document.getElementById('risk-level').textContent = "Calculating...";
+            document.getElementById('risk-level').className = 'text-3xl font-bold text-yellow-600';
+            document.getElementById('probability-value').textContent = '--';
+            document.getElementById('risk-description').textContent = "Please wait while we analyze your results.";
+            document.getElementById('recommendations-container').innerHTML = `<div class="bg-gray-100 p-4 rounded-lg animate-pulse"><div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div><div class="h-4 bg-gray-300 rounded w-full mb-2"></div><div class="h-4 bg-gray-300 rounded w-5/6"></div></div><div class="bg-gray-100 p-4 rounded-lg animate-pulse"><div class="h-4 bg-gray-300 rounded w-3/4 mb-2"></div><div class="h-4 bg-gray-300 rounded w-full mb-2"></div><div class="h-4 bg-gray-300 rounded w-5/6"></div></div>`;
+            document.getElementById('db-message').textContent = '';
+            document.getElementById('risk-needle').style.transform = `translateX(-50%) rotate(0deg)`;
+            ['SleepTime', 'PhysicalHealth', 'MentalHealth'].forEach(id => {
+                const slider = document.getElementById(id);
+                let displayId = id.toLowerCase();
+                if (displayId === 'sleeptime') displayId = 'sleep-value';
+                if (displayId === 'physicalhealth') displayId = 'physical-health-value';
+                if (displayId === 'mentalhealth') displayId = 'mental-health-value';
+                const valueDisplay = document.getElementById(displayId);
+                if (slider && valueDisplay) valueDisplay.textContent = slider.value;
+            });
+        });
+
+        cancelLoginButton?.addEventListener('click', hideLoginModal);
+        loginModal?.addEventListener('click', function (event) {
+            if (event.target === loginModal) {
+                hideLoginModal();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            showSection(1);
+            updateProgressBar();
+            const storedResults = localStorage.getItem('lastAssessmentResult');
+            if (userIsAuthenticated && storedResults && window.location.hash === '#results') {
+                try {
+                    const results = JSON.parse(storedResults);
+                    formElement.style.display = 'none';
+                    document.querySelector('.progress-bar').parentElement.parentElement.style.display = 'none';
+                    processingIndicator.classList.add('hidden');
+                    resultsSection.classList.remove('hidden');
+                    displayBackendResults(results, "Displaying previously saved results.");
+                    resultsSection.scrollIntoView({ behavior: 'smooth' });
+                } catch (e) {
+                    console.error("Could not parse stored results", e);
+                    localStorage.removeItem('lastAssessmentResult');
+                    localStorage.removeItem('lastAssessmentTimestamp');
+                    showSection(1);
+                }
+            } else {
+                showSection(1);
+            }
+
+            ['SleepTime', 'PhysicalHealth', 'MentalHealth'].forEach(id => {
+                const slider = document.getElementById(id);
+                let displayId = id.toLowerCase();
+                if (displayId === 'sleeptime') displayId = 'sleep-value';
+                if (displayId === 'physicalhealth') displayId = 'physical-health-value';
+                if (displayId === 'mentalhealth') displayId = 'mental-health-value';
+                const valueDisplay = document.getElementById(displayId);
+                if (slider && valueDisplay) valueDisplay.textContent = slider.value;
+            });
+        });
+    </script>
+</body>
+
+</html>

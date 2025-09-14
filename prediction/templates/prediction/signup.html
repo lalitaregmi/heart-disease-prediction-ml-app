@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - HeartGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .heartbeat {
+            animation: heartbeat 1.5s infinite;
+        }
+        /* Added styles for modal */
+        .modal-overlay {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen py-12">
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <div class="flex justify-center mb-6">
+            <a href="index.html" class="flex items-center space-x-2 text-red-600">
+                <i class="fas fa-heartbeat text-3xl heartbeat"></i>
+                <span class="font-bold text-2xl">HeartGuard</span>
+            </a>
+        </div>
+        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Create Your Account</h2>
+
+        <!-- Signup Form -->
+        <!-- Ensure action points to the correct URL -->
+        <form action="{% url 'prediction:signup' %}" method="POST" class="space-y-4" id="signup-form">
+             {% csrf_token %}
+             <div>
+                <label for="name" class="block text-sm font-medium text-gray-700">Full Name</label>
+                <input type="text" name="name" id="name" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                       placeholder="John Doe" value="{{ name|default:'' }}"> {# Repopulate on error #}
+            </div>
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" name="email" id="email" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                       placeholder="you@example.com" value="{{ email|default:'' }}"> {# Repopulate on error #}
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" name="password" id="password" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                       placeholder="••••••••">
+                 {# Don't repopulate passwords for security #}
+            </div>
+
+             <div>
+                <label for="confirm-password" class="block text-sm font-medium text-gray-700">Confirm Password</label>
+                <input type="password" name="confirm-password" id="confirm-password" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm"
+                       placeholder="••••••••">
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Select Your Role</label>
+                <div class="mt-2 space-y-2 sm:space-y-0 sm:flex sm:items-center sm:space-x-6">
+                    <div class="flex items-center">
+                        <input id="role-user" name="role" type="radio" value="user"
+                               class="focus:ring-red-500 h-4 w-4 text-red-600 border-gray-300"
+                               {% if selected_role == 'user' or not selected_role %}checked{% endif %}> {# Check based on context #}
+                        <label for="role-user" class="ml-2 block text-sm text-gray-900">
+                            Patient / User
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        <input id="role-doctor" name="role" type="radio" value="doctor"
+                               class="focus:ring-red-500 h-4 w-4 text-red-600 border-gray-300"
+                               {% if selected_role == 'doctor' %}checked{% endif %}> {# Check based on context #}
+                        <label for="role-doctor" class="ml-2 block text-sm text-gray-900">
+                            Doctor / Healthcare Provider
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300">
+                    Sign Up
+                </button>
+            </div>
+        </form>
+        <!-- End Signup Form -->
+
+        <p class="mt-6 text-center text-sm text-gray-600">
+            Already have an account?
+            <a href="/login" class="font-medium text-red-600 hover:text-red-500 hover:underline">
+                Login here
+            </a>
+        </p>
+    </div>
+
+    <!-- Modal Structure -->
+    <div id="message-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-75 modal-overlay hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-auto modal-content transform scale-95">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">Notification</h3>
+                <button type="button" id="modal-close-button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
+            <div id="modal-message-content" class="text-sm text-gray-700">
+                <!-- Message content will be injected here -->
+            </div>
+            <div class="mt-5 sm:mt-6">
+                 <button type="button" id="modal-ok-button" class="inline-flex justify-center w-full rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:text-sm">
+                    OK
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- End Modal Structure -->
+
+    <!-- Pass Django messages to JavaScript -->
+    {{ modal_error_messages|json_script:"modal-error-data" }}
+    {{ modal_success_message|json_script:"modal-success-data" }}
+
+    <script>
+        // Frontend password match check (optional but good UX)
+        const signupForm = document.getElementById('signup-form');
+        if (signupForm) {
+            signupForm.addEventListener("submit", function(e) {
+                const password = document.getElementById("password").value;
+                const confirm = document.getElementById("confirm-password").value;
+                if (password !== confirm) {
+                    e.preventDefault(); // Prevent form submission
+                    // Show modal with password mismatch error immediately
+                    showModal(['Passwords do not match.'], 'error');
+                }
+                // If they match, the form submission proceeds to the backend
+            });
+        }
+
+        // Modal Handling Logic
+        const modal = document.getElementById('message-modal');
+        const modalContent = document.getElementById('modal-message-content');
+        const modalTitle = document.getElementById('modal-title');
+        const closeModalButton = document.getElementById('modal-close-button');
+        const okButton = document.getElementById('modal-ok-button');
+        const modalOverlay = modal.querySelector('.modal-overlay'); // More robust selection
+        const modalDialog = modal.querySelector('.modal-content'); // More robust selection
+
+        function showModal(messages, type = 'error') {
+            if (!modal || !modalContent || !messages || messages.length === 0) return;
+
+            let messageHtml = '';
+            if (Array.isArray(messages)) {
+                 // It's an error list
+                modalTitle.textContent = 'Error';
+                modalContent.classList.remove('text-green-700');
+                modalContent.classList.add('text-red-700');
+                messageHtml = '<ul class="list-disc list-inside space-y-1">';
+                messages.forEach(msg => {
+                    messageHtml += `<li>${escapeHtml(msg)}</li>`; // Basic XSS protection
+                });
+                messageHtml += '</ul>';
+            } else {
+                 // It's a success message (string)
+                modalTitle.textContent = 'Success';
+                modalContent.classList.remove('text-red-700');
+                modalContent.classList.add('text-green-700');
+                messageHtml = `<p>${escapeHtml(messages)}</p>`; // Basic XSS protection
+            }
+
+            modalContent.innerHTML = messageHtml;
+            modal.classList.remove('hidden');
+            // Trigger transitions
+            setTimeout(() => {
+                if (modalOverlay) modalOverlay.classList.add('opacity-100');
+                if (modalDialog) modalDialog.classList.remove('scale-95');
+                if (modalDialog) modalDialog.classList.add('scale-100');
+            }, 10); // Small delay ensures transition trigger
+        }
+
+        function hideModal() {
+            if (!modal) return;
+             // Trigger exit transitions
+            if (modalOverlay) modalOverlay.classList.remove('opacity-100');
+            if (modalDialog) modalDialog.classList.remove('scale-100');
+            if (modalDialog) modalDialog.classList.add('scale-95');
+
+            // Hide after transition duration (e.g., 300ms)
+            setTimeout(() => {
+                 modal.classList.add('hidden');
+            }, 300); // Match CSS transition duration
+        }
+
+        // Basic HTML escaping function
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                 .replace(/&/g, "&")
+                 .replace(/</g, "<")
+                 .replace(/>/g, ">")
+                 .replace(/"/g, """)
+                 .replace(/'/g, "'");
+        }
+
+
+        // Event Listeners for closing the modal
+        if (closeModalButton) closeModalButton.addEventListener('click', hideModal);
+        if (okButton) okButton.addEventListener('click', hideModal);
+        // Optional: Close modal when clicking outside the content area
+        if (modal) {
+            modal.addEventListener('click', (event) => {
+                // Check if the click is directly on the overlay, not the content
+                if (event.target === modal) {
+                    hideModal();
+                }
+            });
+        }
+
+
+        // Check for messages passed from Django when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const errorDataElement = document.getElementById('modal-error-data');
+                const successDataElement = document.getElementById('modal-success-data');
+
+                const errorMessages = errorDataElement ? JSON.parse(errorDataElement.textContent) : null;
+                const successMessage = successDataElement ? JSON.parse(successDataElement.textContent) : null;
+
+                if (errorMessages && errorMessages.length > 0) {
+                    showModal(errorMessages, 'error');
+                } else if (successMessage) {
+                    showModal(successMessage, 'success');
+                }
+            } catch (e) {
+                console.error("Error parsing modal data:", e);
+            }
+        });
+
+    </script>
+
+</body>
+</html>

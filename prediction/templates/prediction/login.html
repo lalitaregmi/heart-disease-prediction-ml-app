@@ -1,0 +1,148 @@
+{% comment %}
+Expected context variables from the view:
+- request: The HttpRequest object (implicitly available for messages)
+- messages: Django messages framework messages
+- email: The submitted email address (only on POST error)
+- selected_role: The submitted role ('user' or 'doctor') (only on POST error)
+- errors: Optional dictionary containing field-specific errors (e.g., errors.email, errors.password, errors.role)
+{% endcomment %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - HeartGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .heartbeat {
+            animation: heartbeat 1.5s infinite;
+        }
+        /* Basic styling for Django messages */
+        .django-messages {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 1rem 0; /* Add some space below messages */
+        }
+        .django-messages li {
+            padding: 0.75rem 1.25rem;
+            margin-bottom: 1rem;
+            border: 1px solid transparent;
+            border-radius: 0.25rem;
+        }
+        .django-messages li.success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        .django-messages li.info {
+            color: #0c5460;
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        .django-messages li.warning {
+            color: #856404;
+            background-color: #fff3cd;
+            border-color: #ffeeba;
+        }
+        .django-messages li.error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
+        <div class="flex justify-center mb-6">
+            <a href="{% url 'prediction:home' %}" class="flex items-center space-x-2 text-red-600">
+                <i class="fas fa-heartbeat text-3xl heartbeat"></i>
+                <span class="font-bold text-2xl">HeartGuard</span>
+            </a>
+        </div>
+        <h2 class="text-2xl font-bold text-center text-gray-800 mb-6">Login to Your Account</h2>
+
+        <!-- Display Django Messages -->
+        {% if messages %}
+            <ul class="django-messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        <!-- Login Form -->
+        <form action="{% url 'prediction:login' %}" method="POST" class="space-y-4">
+            {% csrf_token %}
+
+            <div>
+                <label for="email" class="block text-sm font-medium text-gray-700">Email Address</label>
+                <input type="email" name="email" id="email" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm {% if errors.email %}border-red-500{% endif %}"
+                       placeholder="you@example.com"
+                       value="{{ email|default:'' }}">
+                {% if errors.email %}
+                    <p class="mt-1 text-xs text-red-600">{{ errors.email }}</p>
+                {% endif %}
+            </div>
+
+            <div>
+                <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                <input type="password" name="password" id="password" required
+                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-red-500 focus:border-red-500 sm:text-sm {% if errors.password %}border-red-500{% endif %}"
+                       placeholder="••••••••">
+                 {% if errors.password %}
+                    <p class="mt-1 text-xs text-red-600">{{ errors.password }}</p>
+                 {% endif %}
+            </div>
+
+            <!-- Role Selection -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Login as:</label>
+                <div class="flex items-center space-x-6">
+                    <div class="flex items-center">
+                        <input type="radio" name="role" id="role_user" value="user" required
+                               class="focus:ring-red-500 h-4 w-4 text-red-600 border-gray-300"
+                               {% if selected_role == 'user' %}checked{% endif %}>
+                        <label for="role_user" class="ml-2 block text-sm text-gray-900">User / Patient</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="radio" name="role" id="role_doctor" value="doctor"
+                               class="focus:ring-red-500 h-4 w-4 text-red-600 border-gray-300"
+                               {% if selected_role == 'doctor' %}checked{% endif %}>
+                        <label for="role_doctor" class="ml-2 block text-sm text-gray-900">Doctor</label>
+                    </div>
+                </div>
+                 {% if errors.role %}
+                    <p class="mt-1 text-xs text-red-600">{{ errors.role }}</p>
+                 {% endif %}
+            </div>
+            <!-- End Role Selection -->
+
+            <div>
+                <button type="submit"
+                        class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300">
+                    Login
+                </button>
+            </div>
+        </form>
+        <!-- End Login Form -->
+
+        <p class="mt-6 text-center text-sm text-gray-600">
+            Don't have an account?
+            <a href="{% url 'prediction:signup' %}" class="font-medium text-red-600 hover:text-red-500 hover:underline">
+                Sign up here
+            </a>
+        </p>
+        
+    </div>
+</body>
+</html>

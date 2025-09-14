@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heart Disease Prevention - HeartGuard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .heartbeat {
+            animation: heartbeat 1.5s infinite;
+        }
+        .slide-in {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .staggered > * {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .float-in-out {
+            animation: floatAnimation 3s ease-in-out infinite;
+        }
+        @keyframes floatAnimation {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+        .progress-bar {
+            transition: width 1s ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    <!-- Navigation -->
+    <nav class="bg-red-600 text-white shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto px-4">
+          <div class="flex justify-between items-center py-4">
+            
+            <!-- Logo -->
+            <a href="{% url 'prediction:home' %}" class="flex items-center space-x-2">
+              <i class="fas fa-heartbeat text-2xl heartbeat"></i>
+              <span class="font-bold text-xl">HeartGuard</span>
+            </a>
+      
+            <!-- Desktop Menu -->
+            <div class="hidden md:flex items-center space-x-6">
+                <a href="{% url 'prediction:home' %}" class="hover:text-red-200 ...">Home</a>
+                <a href="{% url 'prediction:about' %}" class="hover:text-red-200 ...">About</a>
+                <a href="{% url 'prediction:prevention' %}" class="hover:text-red-200 ...">Prevention</a>
+                <a href="{% url 'prediction:risk' %}" class="hover:text-red-200 ...">Risk Factors</a>
+                <a href="{% url 'prediction:assessment' %}" class="hover:text-red-200 ...">Risk Assessment</a>
+            
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %} <!-- Doctor Links -->
+                        <a href="{% url 'prediction:doctor_dashboard' %}" class="hover:text-red-200 ... font-semibold">Doctor Area</a>
+                    {% endif %}
+                    <span class="font-medium">Welcome, {{ user.name|default:user.email }}!</span>
+                    <form action="{% url 'prediction:logout' %}" method="post" class="inline">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-white text-red-600 ...">Logout</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'prediction:login' %}" class="hover:text-red-200 ...">Login</a>
+                    <a href="{% url 'prediction:signup' %}" class="bg-white text-red-600 ...">Sign Up</a>
+                {% endif %}
+            </div>
+            <!-- Mobile Menu (Add similar logic) -->
+            <div class="md:hidden hidden" id="mobile-menu">
+                <div class="flex flex-col space-y-4 py-4">
+                    <a href="{% url 'prediction:home' %}" class="...">Home</a>
+                    <a href="{% url 'prediction:about' %}" class="...">About</a>
+                    <a href="{% url 'prediction:prevention' %}" class="...">Prevention</a>
+                    <a href="{% url 'prediction:risk' %}" class="...">Risk Factors</a>
+                    <a href="{% url 'prediction:assessment' %}" class="...">Risk Assessment</a>
+            
+                    {% if user.is_authenticated %}
+                        {% if user.is_staff %}
+                            <a href="{% url 'prediction:doctor_dashboard' %}" class="... font-semibold">Doctor Area</a>
+                        {% endif %}
+                        <span class="font-medium text-center py-2">Welcome, {{ user.name|default:user.email }}!</span>
+                        <form action="{% url 'prediction:logout' %}" method="post" class="w-full">
+                            {% csrf_token %}
+                            <button type="submit" class="...">Logout</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'prediction:login' %}" class="...">Login</a>
+                        <a href="{% url 'prediction:signup' %}" class="...">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+      </nav>
+
+    <!-- Page Header -->
+    <header class="bg-gradient-to-r from-red-600 to-red-800 text-white py-12">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-4xl font-bold mb-4">Preventing Heart Disease</h1>
+            <p class="text-xl max-w-3xl mx-auto">Discover effective strategies to reduce your risk and maintain a healthy heart for life.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <!-- Introduction Section -->
+        <section class="mb-16">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2 mb-8 md:mb-0 md:pr-8 staggered">
+                    <h2 class="text-3xl font-bold mb-4 text-red-600">The Power of Prevention</h2>
+                    <p class="mb-4">Heart disease is often preventable. By making smart choices now, you can reduce your risk factors and help prevent heart disease. Even if you already have heart disease, you can take steps to improve your heart health and quality of life.</p>
+                    <p class="mb-4">Research has shown that up to 80% of premature heart disease and stroke can be prevented through healthy lifestyle choices. Prevention is always better than treatment, and it's never too early or too late to start taking care of your heart.</p>
+                    <p>On this page, we'll explore evidence-based strategies that can significantly reduce your risk of developing heart disease.</p>
+                </div>
+                <div class="md:w-1/2">
+                    <div class="relative">
+                        <div class="bg-red-50 p-8 rounded-lg shadow-lg">
+                            <div class="flex justify-center mb-6">
+                                <i class="fas fa-shield-heart text-6xl text-red-500 float-in-out"></i>
+                            </div>
+                            <h3 class="text-xl font-semibold mb-4 text-center">Prevention Impact</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">Healthy Diet</span>
+                                        <span>35% Risk Reduction</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-green-500 h-2.5 rounded-full progress-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">Regular Exercise</span>
+                                        <span>30% Risk Reduction</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-green-500 h-2.5 rounded-full progress-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">Not Smoking</span>
+                                        <span>50% Risk Reduction</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-green-500 h-2.5 rounded-full progress-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="font-medium">Stress Management</span>
+                                        <span>20% Risk Reduction</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2.5">
+                                        <div class="bg-green-500 h-2.5 rounded-full progress-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key Prevention Strategies -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center text-red-600">Key Prevention Strategies</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 staggered">
+                <!-- Healthy Diet -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-apple-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Eat a Heart-Healthy Diet</h3>
+                    <ul class="space-y-2 mt-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Emphasize fruits, vegetables, whole grains, and lean proteins</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Limit saturated fats, trans fats, sodium, and added sugars</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Consider Mediterranean or DASH diet approaches</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Include omega-3 fatty acids from fish or plant sources</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Regular Exercise -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Stay Physically Active</h3>
+                    <ul class="space-y-2 mt-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Aim for at least 150 minutes of moderate activity weekly</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Include both aerobic exercise and strength training</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Break up long periods of sitting with short activity breaks</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Find activities you enjoy to maintain consistency</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Maintain Healthy Weight -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-weight"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Maintain a Healthy Weight</h3>
+                    <ul class="space-y-2 mt-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Aim for a BMI between 18.5 and 24.9</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Focus on waist circumference (under 35" for women, 40" for men)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Even modest weight loss (5-10%) can improve heart health</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Combine diet and exercise for sustainable results</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Don't Smoke -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-smoking-ban"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Don't Smoke or Use Tobacco</h3>
+                    <ul class="space-y-2 mt-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Smoking damages blood vessels and increases heart attack risk</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Quitting smoking reduces risk by 50% after one year</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Avoid secondhand smoke exposure</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Consider nicotine replacement or medications to help quit</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Limit Alcohol -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-wine-glass-alt"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Limit Alcohol Consumption</h3>
+                    <ul class="space-y-2 mt-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>If you drink, do so in moderation (1 drink/day for women, 2 for men)</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Excessive alcohol raises blood pressure and triglycerides</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Alcohol adds extra calories that can contribute to weight gain</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Consider non-alcoholic alternatives for social situations</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Manage Stress -->
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300 transform hover:-translate-y-1">
+                    <div class="text-red-500 text-4xl mb-4 flex justify-center">
+                        <i class="fas fa-spa"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold mb-2 text-center">Manage Stress Effectively</h3>
+                    <ul class="space-y-2 mt-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Practice mindfulness, meditation, or deep breathing</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Engage in regular physical activity to reduce stress</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Maintain social connections and support networks</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check text-green-500 mt-1 mr-2"></i>
+                            <span>Consider professional help if stress becomes overwhelming</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- The DASH Diet Section -->
+        <section class="mb-16">
+            <div class="bg-red-50 p-8 rounded-lg">
+                <h2 class="text-3xl font-bold mb-6 text-red-600">The DASH Diet for Heart Health</h2>
+                <p class="mb-6">The Dietary Approaches to Stop Hypertension (DASH) diet is specifically designed to help lower blood pressure and improve heart health. Research has shown it can lower blood pressure in as little as two weeks.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 staggered">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-red-600">DASH Diet Recommendations</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <div class="bg-green-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-carrot text-green-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Vegetables: 4-5 servings daily</h4>
+                                    <p class="text-sm text-gray-600">Rich in potassium, fiber, and magnesium to help lower blood pressure</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-red-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-apple-alt text-red-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Fruits: 4-5 servings daily</h4>
+                                    <p class="text-sm text-gray-600">Provide potassium, magnesium, and fiber while being naturally low in fat</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-yellow-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-bread-slice text-yellow-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Whole Grains: 6-8 servings daily</h4>
+                                    <p class="text-sm text-gray-600">Rich in fiber and contain nutrients that help regulate blood pressure</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-cheese text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Low-Fat Dairy: 2-3 servings daily</h4>
+                                    <p class="text-sm text-gray-600">Provides calcium and protein with less saturated fat</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-red-600">Foods to Limit</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <div class="bg-red-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-drumstick-bite text-red-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Red Meat</h4>
+                                    <p class="text-sm text-gray-600">Limit to a few times per week; choose lean cuts when possible</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-red-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-salt-shaker text-red-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Sodium (Salt)</h4>
+                                    <p class="text-sm text-gray-600">Aim for less than 2,300mg daily (about 1 teaspoon)</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-red-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-candy-cane text-red-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Added Sugars</h4>
+                                    <p class="text-sm text-gray-600">Limit sweets and sugary beverages to less than 5 servings per week</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-red-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-oil-can text-red-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Saturated and Trans Fats</h4>
+                                    <p class="text-sm text-gray-600">Limit full-fat dairy, fatty meats, and processed foods</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-8 bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-lightbulb text-green-500 text-xl"></i>
+                        </div>
+                        <div class="ml-4">
+                            <h3 class="text-lg font-medium text-green-800">DASH Diet Success Tip</h3>
+                            <p class="text-green-700">Start gradually. Try adding one more serving of vegetables and fruits each day, then gradually reduce sodium and increase whole grains. Small, sustainable changes are more likely to become lifelong habits.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Exercise Guidelines -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold mb-8 text-center text-red-600">Exercise Guidelines for Heart Health</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 staggered">
+                <div class="bg-white p-6 rounded-lg shadow-md col-span-1 lg:col-span-2">
+                    <h3 class="text-xl font-semibold mb-4">Weekly Exercise Recommendations</h3>
+                    <p class="mb-4">The American Heart Association recommends at least 150 minutes of moderate-intensity aerobic activity or 75 minutes of vigorous aerobic activity per week, plus moderate- to high-intensity muscle-strengthening activity at least 2 days per week.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                <i class="fas fa-walking text-green-500 mr-2"></i>
+                                Moderate Activities
+                            </h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Brisk walking (2.5 mph or faster)
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Water aerobics
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Dancing
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Gardening
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Tennis (doubles)
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-green-500 mr-2"></i>
+                                    Biking slower than 10 mph
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-lg mb-2 flex items-center">
+                                <i class="fas fa-running text-orange-500 mr-2"></i>
+                                Vigorous Activities
+                            </h4>
+                            <ul class="space-y-2">
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-orange-500 mr-2"></i>
+                                    Running/jogging
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-orange-500 mr-2"></i>
+                                    Swimming laps
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-orange-500 mr-2"></i>
+                                    Tennis (singles)
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-orange-500 mr-2"></i>
+                                    Aerobic dancing
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-orange-500 mr-2"></i>
+                                    Bicycling 10 mph or faster
+                                </li>
+                                <li class="flex items-center">
+                                    <i class="fas fa-check text-orange-500 mr-2"></i>
+                                    Hiking uphill or with a heavy backpack
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold mb-4">Getting Started Safely</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-user-md text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium">Consult Your Doctor</h4>
+                                <p class="text-sm text-gray-600">If you have existing heart conditions or have been inactive, talk to your doctor before starting a new exercise program.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-shoe-prints text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium">Start Slowly</h4>
+                                <p class="text-sm text-gray-600">Begin with just 5-10 minutes of activity and gradually increase duration and intensity.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-heartbeat text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium">Monitor Your Heart Rate</h4>
+                                <p class="text-sm text-gray-600">Learn your target heart rate zone and stay within it during exercise.</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <div class="bg-blue-100 p-2 rounded-full mr-3 flex-shrink-0">
+                                <i class="fas fa-calendar-check text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-medium">Be Consistent</h4>
+                                <p class="text-sm text-gray-600">Regular activity is more beneficial than occasional intense workouts.</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Regular Checkups -->
+        <section>
+            <div class="bg-blue-50 p-8 rounded-lg">
+                <h2 class="text-3xl font-bold mb-6 text-blue-700">Regular Health Checkups</h2>
+                <p class="mb-6">Even with a healthy lifestyle, regular medical checkups are essential for early detection and management of heart disease risk factors.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 staggered">
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-blue-700">Recommended Screenings</h3>
+                        <ul class="space-y-3">
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-heartbeat text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Blood Pressure</h4>
+                                    <p class="text-sm text-gray-600">At least once every 2 years if normal; more frequently if elevated</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-vial text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Cholesterol Levels</h4>
+                                    <p class="text-sm text-gray-600">Every 4-6 years for adults with normal risk; more frequently with elevated risk</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-candy-cane text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Blood Glucose</h4>
+                                    <p class="text-sm text-gray-600">Every 3 years after age 45; earlier if overweight or have other risk factors</p>
+                                </div>
+                            </li>
+                            <li class="flex items-start">
+                                <div class="bg-blue-100 p-2 rounded-full mr-3">
+                                    <i class="fas fa-weight text-blue-600"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium">Body Weight</h4>
+                                    <p class="text-sm text-gray-600">At every regular healthcare visit</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-semibold mb-4 text-blue-700">Know Your Numbers</h3>
+                        <div class="space-y-4">
+                            <div class="border-b pb-3">
+                                <h4 class="font-medium">Blood Pressure</h4>
+                                <div class="flex justify-between mt-2">
+                                    <span class="text-sm">Optimal: Less than 120/80 mmHg</span>
+                                    <span class="text-sm text-red-600">High: 130/80 mmHg or higher</span>
+                                </div>
+                            </div>
+                            <div class="border-b pb-3">
+                                <h4 class="font-medium">Total Cholesterol</h4>
+                                <div class="flex justify-between mt-2">
+                                    <span class="text-sm">Desirable: Less than 200 mg/dL</span>
+                                    <span class="text-sm text-red-600">High: 240 mg/dL or higher</span>
+                                </div>
+                            </div>
+                            <div class="border-b pb-3">
+                                <h4 class="font-medium">LDL Cholesterol</h4>
+                                <div class="flex justify-between mt-2">
+                                    <span class="text-sm">Optimal: Less than 100 mg/dL</span>
+                                    <span class="text-sm text-red-600">High: 160 mg/dL or higher</span>
+                                </div>
+                            </div>
+                            <div class="border-b pb-3">
+                                <h4 class="font-medium">HDL Cholesterol</h4>
+                                <div class="flex justify-between mt-2">
+                                    <span class="text-sm">Desirable: 60 mg/dL or higher</span>
+                                    <span class="text-sm text-red-600">Low: Less than 40 mg/dL</span>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium">Fasting Blood Glucose</h4>
+                                <div class="flex justify-between mt-2">
+                                    <span class="text-sm">Normal: Less than 100 mg/dL</span>
+                                    <span class="text-sm text-red-600">Diabetes: 126 mg/dL or higher</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    {% if not user.is_staff %}
+
+
+    <!-- Call to Action -->
+    <section class="bg-red-600 text-white py-12">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-6">Ready to Assess Your Heart Disease Risk?</h2>
+            <p class="text-xl mb-8 max-w-3xl mx-auto">Take our comprehensive risk assessment to understand your personal risk factors and get personalized prevention recommendations.</p>
+            <a href="/assessment" class="bg-white text-red-600 hover:bg-gray-100 px-8 py-4 rounded-lg font-medium text-lg transition duration-300 inline-block">
+                Check Your Risk Now
+            </a>
+        </div>
+    </section>
+
+    {% endif %}
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12">
+       <div class="container mx-auto px-4">
+            <div class="flex justify-between ">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">HeartGuard</h3>
+                    <p class="mb-4">Empowering you with knowledge for a healthier heart.</p>
+                   
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Quick Links</h3>
+                    <ul class="flex justify-between  gap-5 ">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white transition duration-300">Home</a></li>
+                        <li><a href="about.html" class="text-gray-400 hover:text-white transition duration-300">About</a></li>
+                        <li><a href="prevention.html" class="text-gray-400 hover:text-white transition duration-300">Prevention</a></li>
+                        <li><a href="risk-factors.html" class="text-gray-400 hover:text-white transition duration-300">Risk Factors</a></li>
+                        <li><a href="prediction.html" class="text-gray-400 hover:text-white transition duration-300">Risk Assessment</a></li>
+                    </ul>
+                </div>
+                
+              
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 HeartGuard. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+   <script>
+    // Mobile menu toggle
+    const menuToggleButton = document.getElementById('menu-toggle');
+    if (menuToggleButton) {
+        menuToggleButton.addEventListener('click', function() {
+            const mobileMenu = document.getElementById('mobile-menu');
+            if (mobileMenu) { // Also good to check if mobileMenu exists
+                mobileMenu.classList.toggle('hidden');
+            }
+        });
+    }
+    
+    // Animation for staggered elements
+    document.addEventListener('DOMContentLoaded', function() {
+        const staggeredElements = document.querySelectorAll('.staggered > *');
+        staggeredElements.forEach((el, index) => {
+            setTimeout(() => {
+                el.classList.add('fade-in');
+            }, 100 * index); // Adjust delay as needed, 100ms is reasonable
+        });
+    });
+    
+    // Scroll animation (ensure this is working as intended too)
+    // No elements in your current main content sections use 'slide-in',
+    // but if you plan to, this should also be guarded or tested.
+    window.addEventListener('scroll', function() {
+        const elements = document.querySelectorAll('.slide-in');
+        elements.forEach(element => {
+            const position = element.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight / 1.3;
+            
+            if (position < screenPosition) {
+                // Ensure the fadeIn animation is appropriately defined and works with inline style
+                element.style.animation = 'fadeIn 0.5s ease-out forwards';
+            }
+        });
+    });
+</script>   
+</body>
+</html>
