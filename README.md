@@ -1,6 +1,6 @@
 # Heart Disease Prediction Using Machine Learning
 
-A machine-learning research project developed as part of my MSc in Data Science at York St John University, United Kingdom. The project explores the application of machine-learning algorithms to heart disease prediction and integrates the selected model into a Django-based web application.
+A machine-learning research project developed as part of my MSc in Data Science at York St John University, United Kingdom. This project explores the application of machine-learning algorithms to heart disease prediction and integrates the selected model into a Django-based web application.
 
 ## 1. Project Overview
 
@@ -12,17 +12,18 @@ Three machine-learning classification algorithms were implemented and compared:
 - Random Forest
 - XGBoost
 
-The models were evaluated using different classification metrics and visualisation techniques. Random Forest was selected as the best-performing model based on its F1-score in the original experimental evaluation.
+The models were evaluated using classification metrics and visualisation techniques. Random Forest was selected as the best-performing model based on its F1-score in the original experimental evaluation.
 
-The selected model was integrated into a Django web application called **HeartGuard**, which allows users to complete health assessments and receive estimated heart disease risk predictions.
+The selected model was integrated into a Django web application called **HeartGuard**, allowing users to complete health assessments and receive estimated heart disease risk predictions.
 
-**Project information:**
-- Degree: MSc Data Science
-- University: York St John University, United Kingdom
-- Research project: Predictive Modelling for Heart Disease Diagnosis Using Electronic Health Records
-- Research project mark: 72%
-- Programming language: Python
-- Web framework: Django
+### Project Information
+
+- **Degree:** MSc Data Science
+- **University:** York St John University, United Kingdom
+- **Research project:** Predictive Modelling for Heart Disease Diagnosis Using Electronic Health Records
+- **Research project mark:** 72%
+- **Programming language:** Python
+- **Web framework:** Django
 
 > **Disclaimer:** This project is an academic research prototype. It is not a clinically validated diagnostic system and must not be used as a substitute for professional medical advice.
 
@@ -30,7 +31,7 @@ The selected model was integrated into a Django web application called **HeartGu
 
 The project used the `heart_2020_cleaned.csv` dataset, derived from the CDC's 2020 Behavioral Risk Factor Surveillance System (BRFSS) survey data.
 
-The dataset contains health and lifestyle indicators associated with heart disease, including:
+The dataset contains health and lifestyle indicators, including:
 
 - Heart disease status
 - Body Mass Index (BMI)
@@ -231,12 +232,12 @@ heart-disease-prediction-ml-app/
 
 - `heart_risk_project/`: Django project configuration.
 - `prediction/`: Main application containing prediction, forms, views and database-related functionality.
-- `prediction/mlmodels/`: Directory containing saved machine-learning and preprocessing artefacts.
+- `prediction/mlmodels/`: Directory for saved machine-learning and preprocessing artefacts.
 - `prediction/templates/prediction/`: HTML templates used by the application.
 - `manage.py`: Django management utility.
 - `pyproject.toml`: Python project configuration and dependency declarations.
 - `poetry.lock`: Locked dependency versions.
-- `.gitattributes`: Git attributes configuration, including file-handling rules.
+- `.gitattributes`: Git attributes configuration, including Git LFS tracking for `.pkl` files.
 
 ## 9. Saved Model and Preprocessing Artefacts
 
@@ -249,49 +250,72 @@ The repository includes:
 
 The model is loaded using Joblib. The preprocessing artefacts contain information required to prepare user inputs consistently with the features expected by the model.
 
-The model file is stored using Git Large File Storage (Git LFS) because of its large size.
+The trained model is approximately 902 MB and is stored using **Git Large File Storage (Git LFS)**.
 
-**Note:** The original training code saved the preprocessing artefact as `preprocessing_artifacts.pkl`, while the Django application uses `features.pkl`. The artefact supplied to the application must have the structure expected by `ml_model.py`.
+The repository's `.gitattributes` file contains the following tracking rule:
 
-## 10. Running the Application
+```text
+*.pkl filter=lfs diff=lfs merge=lfs -text
+```
 
-The application was developed as a Django project.
+This configures `.pkl` files to be managed through Git LFS.
 
-### Step 1: Clone the Repository
+The original training code saved the preprocessing artefact as `preprocessing_artifacts.pkl`, while the Django application uses `features.pkl`. The artefact supplied to the application must have the structure expected by `ml_model.py`.
+
+## 10. Installation and Running the Application
+
+The repository uses Poetry for Python dependency management through `pyproject.toml` and `poetry.lock`.
+
+### Step 1: Install the Prerequisites
+
+Make sure you have:
+
+- Python compatible with the project's dependency configuration
+- Git
+- Git LFS
+- Poetry
+
+### Step 2: Clone the Repository
 
 ```bash
 git clone https://github.com/lalitaregmi/heart-disease-prediction-ml-app.git
 cd heart-disease-prediction-ml-app
 ```
 
-### Step 2: Retrieve Git LFS Files
-
-Install Git LFS if it is not already installed, then run:
+### Step 3: Initialise Git LFS and Retrieve the Model
 
 ```bash
 git lfs install
 git lfs pull
 ```
 
-This retrieves large files stored through Git Large File Storage.
+Git LFS is required to retrieve the actual large model file rather than only its pointer.
 
-### Step 3: Set Up the Python Environment
-
-The repository includes `pyproject.toml` and `poetry.lock` for dependency management.
-
-Set up the environment using the project's dependency configuration and the compatible Python and package versions.
-
-### Step 4: Run the Django Development Server
-
-After configuring the environment and dependencies, run:
+### Step 4: Install Dependencies Using Poetry
 
 ```bash
-python manage.py runserver
+poetry install
+```
+
+This uses the dependency configuration and lock file included in the repository.
+
+### Step 5: Activate the Poetry Environment
+
+```bash
+poetry shell
+```
+
+If your installed Poetry version does not provide the `shell` command, you can run commands inside the environment using `poetry run`.
+
+### Step 6: Start the Django Development Server
+
+```bash
+poetry run python manage.py runserver
 ```
 
 The application can then be accessed locally through the Django development server.
 
-*Note: These are general setup instructions. The original project may require additional environment-specific configuration.*
+*Note: These are general setup instructions. The original project may require additional environment-specific configuration or dependencies. A clean installation on another system has not been independently verified.*
 
 ## 11. Methodological Limitations and Future Research
 
