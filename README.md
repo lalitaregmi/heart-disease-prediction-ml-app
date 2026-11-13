@@ -1,37 +1,36 @@
 # Heart Disease Prediction Using Machine Learning
 
-A machine-learning research project developed as part of my MSc in Data Science at York St John University. The project explores the use of classification algorithms to predict heart disease indicators and integrates a selected model into a Django-based web application.
+A machine-learning research project developed as part of my MSc in Data Science at York St John University, United Kingdom. The project explores the application of machine-learning algorithms to heart disease prediction and integrates the selected model into a Django-based web application.
 
-## Project Overview
+## 1. Project Overview
 
-Heart disease is an important public-health concern. This project investigates how machine-learning techniques can be used to analyse health and lifestyle indicators and estimate the likelihood of heart disease.
+Heart disease is a major public-health concern. This project investigates how machine-learning techniques can analyse health and lifestyle indicators to estimate the likelihood of heart disease.
 
-Three classification algorithms were implemented and compared:
+Three machine-learning classification algorithms were implemented and compared:
 
 - Logistic Regression
 - Random Forest
 - XGBoost
 
-The models were evaluated using classification metrics and visual analysis. Random Forest was selected as the best-performing model based on its reported F1-score in the project's evaluation.
+The models were evaluated using different classification metrics and visualisation techniques. Random Forest was selected as the best-performing model based on its F1-score in the original experimental evaluation.
 
-The selected model was integrated into a Django web application called **HeartGuard**.
+The selected model was integrated into a Django web application called **HeartGuard**, which allows users to complete health assessments and receive estimated heart disease risk predictions.
 
-> **Important:** This project is an academic research prototype. It is not a clinically validated diagnostic system and should not be used to make medical decisions.
+**Project information:**
+- Degree: MSc Data Science
+- University: York St John University, United Kingdom
+- Research project: Predictive Modelling for Heart Disease Diagnosis Using Electronic Health Records
+- Research project mark: 72%
+- Programming language: Python
+- Web framework: Django
 
-## Research Project Information
+> **Disclaimer:** This project is an academic research prototype. It is not a clinically validated diagnostic system and must not be used as a substitute for professional medical advice.
 
-- **Degree:** MSc Data Science
-- **University:** York St John University, United Kingdom
-- **Project:** Predictive Modelling for Heart Disease Diagnosis Using Electronic Health Records
-- **Project mark:** 72%
-- **Programming language:** Python
-- **Web framework:** Django
+## 2. Dataset
 
-## Dataset
+The project used the `heart_2020_cleaned.csv` dataset, derived from the CDC's 2020 Behavioral Risk Factor Surveillance System (BRFSS) survey data.
 
-The project used the `heart_2020_cleaned.csv` heart disease indicators dataset, derived from the CDC's 2020 Behavioral Risk Factor Surveillance System (BRFSS) survey data.
-
-The dataset contains health and lifestyle indicators, including:
+The dataset contains health and lifestyle indicators associated with heart disease, including:
 
 - Heart disease status
 - Body Mass Index (BMI)
@@ -47,45 +46,47 @@ The dataset contains health and lifestyle indicators, including:
 - Age category and other demographic indicators
 
 The target variable was `HeartDisease`, encoded as:
+
 - `1`: Yes
 - `0`: No
 
-The dataset represents survey-derived health indicators, not hospital electronic health records.
+**Dataset clarification:** Although the official dissertation title refers to Electronic Health Records, the dataset used in the implementation is survey-derived health data from the CDC BRFSS programme, rather than hospital electronic health records.
 
-## Methodology
+## 3. Methodology
 
-### 1. Data exploration and preprocessing
+### 3.1 Data Exploration and Preprocessing
 
-The project included:
+The project included the following data preparation steps:
 
 - Initial dataset exploration
 - Missing-value and duplicate checks
 - Duplicate-row removal
 - Target-variable encoding
-- Categorical feature grouping using top-category encoding
+- Identification of categorical and numerical features
+- Top-category grouping for categorical variables
 - One-hot encoding
 - Z-score-based outlier removal
 - Numerical feature scaling using StandardScaler
 
-### 2. Class imbalance handling
+### 3.2 Handling Class Imbalance
 
-SMOTE (Synthetic Minority Over-sampling Technique) was used to generate synthetic minority-class samples and balance the class distribution.
+The Synthetic Minority Over-sampling Technique (SMOTE) was used to address class imbalance by generating synthetic samples for the minority class.
 
-### 3. Model development
+### 3.3 Machine-Learning Models
 
-Three classification algorithms were trained and compared:
+Three classification algorithms were implemented and compared.
 
-| Model | Description |
+| Algorithm | Description |
 |---|---|
-| Logistic Regression | Baseline classification model |
-| Random Forest | Ensemble learning model |
-| XGBoost | Gradient-boosting classification model |
+| Logistic Regression | Baseline binary classification model |
+| Random Forest | Ensemble learning algorithm |
+| XGBoost | Gradient-boosting classification algorithm |
 
-### 4. Model evaluation
+### 3.4 Model Evaluation
 
-The project used stratified five-fold cross-validation and a separate train/test evaluation in the original experimental workflow.
+The models were evaluated using stratified five-fold cross-validation and a train/test evaluation in the original experimental workflow.
 
-Evaluation metrics included:
+The evaluation metrics included:
 
 - Accuracy
 - Precision
@@ -93,17 +94,17 @@ Evaluation metrics included:
 - F1-score
 - ROC-AUC
 
-Additional analysis included classification reports, confusion matrices, ROC curves and feature-importance visualisations.
+Additional evaluation and visualisation techniques included:
 
-### 5. Explainable AI
+- Classification reports
+- Confusion matrices
+- ROC curves
+- Predicted probability distributions
+- Feature-importance analysis
 
-SHAP (SHapley Additive exPlanations) was used to examine feature contributions to the XGBoost model's predictions.
+## 4. Model Performance Results
 
-Feature-importance analysis was also conducted for the three models to investigate the health and lifestyle variables that influenced their predictions.
-
-## Reported Model Results
-
-The following table presents the average five-fold cross-validation results reported in the MSc dissertation.
+The following table presents the average five-fold cross-validation results reported in my MSc dissertation.
 
 | Model | Accuracy | Precision | Recall | F1-score | ROC-AUC |
 |---|---:|---:|---:|---:|---:|
@@ -111,25 +112,47 @@ The following table presents the average five-fold cross-validation results repo
 | Random Forest | **0.8891** | 0.8829 | **0.8971** | **0.8899** | 0.9471 |
 | XGBoost | 0.8749 | **0.8935** | 0.8513 | 0.8719 | **0.9488** |
 
-Random Forest achieved the highest cross-validation F1-score (0.8899), while XGBoost achieved the highest cross-validation precision (0.8935) and ROC-AUC (0.9488).
+### Key Findings
 
-Random Forest was selected as the best-performing model based on F1-score.
+- Random Forest achieved the highest F1-score of 0.8899.
+- Random Forest achieved the highest recall of 0.8971.
+- XGBoost achieved the highest precision of 0.8935.
+- XGBoost achieved the highest ROC-AUC of 0.9488.
+- Logistic Regression provided a baseline for comparison with the ensemble-based models.
 
-These figures are reproduced from the original MSc dissertation and are not independently verified.
+Based on the highest F1-score, Random Forest was selected as the best-performing model in the original project and saved for integration into the web application.
 
-## Important Methodological Limitation
+*These figures are reproduced from the original MSc dissertation and represent the results of the original experimental workflow. They have not been independently verified.*
 
-In the original implementation, SMOTE was applied to the complete dataset before cross-validation and the train/test split. Consequently, synthetic samples could be related to observations later included in validation or test sets. Preprocessing was also performed before splitting.
+## 5. Explainable Artificial Intelligence (XAI)
 
-This introduces a risk of data leakage and may lead to optimistic performance estimates. The reported metrics should therefore be interpreted in the context of the original experimental procedure rather than as independently validated estimates of performance on unseen real-world populations.
+SHAP (SHapley Additive exPlanations) was used to investigate feature contributions to the XGBoost model's predictions.
 
-The original project code has been retained as developed for the MSc project. This README documents its methodology and limitations; it does not imply that the implementation has been revised.
+The project also examined feature importance from the individual classification models.
 
-## HeartGuard Web Application
+Some of the influential features identified in the analysis included:
 
-The selected model was integrated into a Django-based web application named **HeartGuard**.
+- BMI
+- General health
+- Sleep time
+- Mental health
+- Physical health
+- Diabetes
+- Difficulty walking
+- Stroke history
+- Age category
 
-### Application features
+The SHAP feature-importance analysis helped explore how different health and lifestyle indicators contributed to model outputs.
+
+These feature-importance results describe model behaviour and should not be interpreted as proof of causal relationships with heart disease.
+
+## 6. HeartGuard Web Application
+
+The selected machine-learning model was integrated into a Django-based web application called **HeartGuard**.
+
+The application demonstrates how a trained machine-learning model can be incorporated into a web-based health-risk assessment system.
+
+### Main Features
 
 - User registration and login
 - Patient/user and doctor account roles
@@ -141,97 +164,126 @@ The selected model was integrated into a Django-based web application named **He
 - Doctor dashboard
 - Health information and prevention content
 
-The application displays estimated risk categories and is intended as an academic demonstration of machine-learning integration into a web application.
+The application accepts user-provided health and lifestyle information, prepares the input using saved preprocessing components and passes it to the trained model to generate an estimated risk prediction.
 
-## Technologies Used
+The output is intended for academic demonstration and is not a medical diagnosis.
 
+## 7. Technologies and Libraries
+
+### Programming and Web Development
 - Python
+- Django
+- HTML
+- CSS
+
+### Machine Learning and Data Science
 - Pandas
 - NumPy
 - Scikit-learn
 - XGBoost
 - Imbalanced-learn (SMOTE)
 - SHAP
+
+### Data Visualisation
 - Matplotlib
 - Seaborn
+
+### Model Saving and Development Tools
 - Joblib
-- Django
-- HTML and CSS
-- Git and GitHub
+- Git
+- GitHub
+- Jupyter Notebook
+- Poetry
 
-## Project Structure
+## 8. Repository Structure
 
-The main Django application is organised into the following components:
+The repository is organised as a Django project with a main project configuration folder and a separate application for prediction functionality.
 
 ```text
 heart-disease-prediction-ml-app/
 │
 ├── heart_risk_project/
-│   ├── settings.py
-│   ├── urls.py
-│   ├── asgi.py
-│   └── wsgi.py
 │
 ├── prediction/
 │   ├── migrations/
 │   ├── mlmodels/
 │   ├── templates/
 │   │   └── prediction/
+│   ├── __init__.py
 │   ├── admin.py
 │   ├── apps.py
 │   ├── forms.py
 │   ├── ml_model.py
 │   ├── models.py
+│   ├── test.py
 │   ├── tests.py
 │   ├── urls.py
 │   └── views.py
 │
-└── README.md
+├── .gitattributes
+├── README.md
+├── manage.py
+├── poetry.lock
+└── pyproject.toml
 ```
 
-The `prediction` application contains the model-loading, input-preparation, prediction and web application functionality.
+### Main Components
 
-## Model and Preprocessing Files
+- `heart_risk_project/`: Django project configuration.
+- `prediction/`: Main application containing prediction, forms, views and database-related functionality.
+- `prediction/mlmodels/`: Directory containing saved machine-learning and preprocessing artefacts.
+- `prediction/templates/prediction/`: HTML templates used by the application.
+- `manage.py`: Django management utility.
+- `pyproject.toml`: Python project configuration and dependency declarations.
+- `poetry.lock`: Locked dependency versions.
+- `.gitattributes`: Git attributes configuration, including file-handling rules.
+
+## 9. Saved Model and Preprocessing Artefacts
 
 The application uses saved machine-learning and preprocessing artefacts stored in the `prediction/mlmodels/` directory.
 
 The repository includes:
+
 - `heart_disease_model.pkl`
 - `features.pkl`
 
-The model is loaded using Joblib. The preprocessing artefacts contain information required to prepare user inputs consistently with the model's expected features.
+The model is loaded using Joblib. The preprocessing artefacts contain information required to prepare user inputs consistently with the features expected by the model.
 
-The original training notebook saved its preprocessing artefacts under the filename `preprocessing_artifacts.pkl`. The application repository uses `features.pkl`; users reproducing the project should ensure that the artefact supplied to the application has the structure expected by `ml_model.py`.
+The model file is stored using Git Large File Storage (Git LFS) because of its large size.
 
-The model file is large and is stored using Git Large File Storage (Git LFS).
+**Note:** The original training code saved the preprocessing artefact as `preprocessing_artifacts.pkl`, while the Django application uses `features.pkl`. The artefact supplied to the application must have the structure expected by `ml_model.py`.
 
-## Running the Application
+## 10. Running the Application
 
-The application was developed as a Django project. The exact dependency versions and environment configuration should be checked against the original project files before setting up a new environment.
+The application was developed as a Django project.
 
-### Clone the repository
+### Step 1: Clone the Repository
 
 ```bash
 git clone https://github.com/lalitaregmi/heart-disease-prediction-ml-app.git
 cd heart-disease-prediction-ml-app
 ```
 
-### Retrieve Git LFS files
+### Step 2: Retrieve Git LFS Files
 
-If Git LFS is used for the model artefacts, install and initialise Git LFS before retrieving the large files:
+Install Git LFS if it is not already installed, then run:
 
 ```bash
 git lfs install
 git lfs pull
 ```
 
-### Set up the Python environment
+This retrieves large files stored through Git Large File Storage.
 
-Install the project's dependencies using the dependency configuration supplied in the repository. The original development environment used Python and the libraries listed in the Technologies Used section.
+### Step 3: Set Up the Python Environment
 
-### Start the Django development server
+The repository includes `pyproject.toml` and `poetry.lock` for dependency management.
 
-After the environment and dependencies are configured:
+Set up the environment using the project's dependency configuration and the compatible Python and package versions.
+
+### Step 4: Run the Django Development Server
+
+After configuring the environment and dependencies, run:
 
 ```bash
 python manage.py runserver
@@ -239,30 +291,45 @@ python manage.py runserver
 
 The application can then be accessed locally through the Django development server.
 
-**Note:** The original project may require environment-specific configuration or additional setup. These instructions describe the general workflow and are not a guarantee of a clean installation on every system.
+*Note: These are general setup instructions. The original project may require additional environment-specific configuration.*
 
-## Limitations and Future Research
+## 11. Methodological Limitations and Future Research
 
-Potential areas for further investigation include:
+The original implementation has methodological limitations that should be considered when interpreting the reported evaluation results.
 
-- Evaluating models with preprocessing and SMOTE applied only within training folds.
-- Using an untouched test set with the original class distribution.
-- Assessing model performance across different demographic groups.
+In the original training workflow:
+
+- SMOTE was applied to the complete dataset before cross-validation and the train/test split.
+- Preprocessing operations were performed before the data split.
+- This creates a risk of data leakage because information from observations later used for validation or testing may influence the training process.
+
+Consequently, the reported evaluation metrics may provide optimistic estimates of model performance. They should not be interpreted as independently validated performance on unseen real-world populations.
+
+Potential areas for future investigation include:
+
+- Applying preprocessing and SMOTE within training folds using an appropriate pipeline.
+- Evaluating models on an untouched test set with the original class distribution.
 - Investigating model calibration and prediction uncertainty.
-- Improving explainability and interpretation of individual predictions.
+- Assessing performance across different demographic groups.
 - Exploring external validation using independent datasets.
-- Investigating the suitability of machine learning for responsible, human-centred digital-health applications.
+- Improving explainability and interpretation of individual predictions.
+- Investigating responsible, human-centred applications of machine learning in digital health.
 
-## Author
+The original project code has been retained as developed for the MSc research project. This README documents the methodology and its limitations; it does not imply that the implementation has been revised.
+
+## 12. Author
 
 **Lalita Regmi**
 
-MSc Data Science, York St John University, United Kingdom
+MSc Data Science  
+York St John University, United Kingdom
 
 GitHub: https://github.com/lalitaregmi
 
-## Disclaimer
+## 13. Disclaimer
 
-This project was developed for academic purposes as part of an MSc research project. It is not a medical device, does not provide a clinical diagnosis and has not been established as suitable for clinical use. Users should consult qualified healthcare professionals for medical advice.
+This project was developed for academic purposes as part of an MSc research project.
 
-Git and GitHub
+The HeartGuard application is an experimental research prototype. It is not a medical device, does not provide a clinical diagnosis and has not been established as suitable for clinical use.
+
+The predictions should not be used to make medical decisions. Users should consult qualified healthcare professionals for medical advice, diagnosis and treatment.
